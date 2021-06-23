@@ -22,7 +22,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.900.0"
+    "aws-sdk": "^2.900.0",
+    "axios": "^0.21.1",
+    "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.5"
   },
   "devDependencies": {
     "current-git-branch": "^1.1.0",
