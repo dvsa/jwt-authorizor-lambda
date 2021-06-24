@@ -48,13 +48,16 @@ export const handler = async (event: APIGatewayProxyEvent, context: Context): Pr
   let statusCode: int = 200;
   try {
     valid = jwt.verify(token, key);
+    return Promise.resolve({
+      statusCode,
+      body: JSON.stringify(valid),
+    });
   } catch (err) {
     statusCode = 500;
-    logger.error(err.message);
+    const message = err.message;
+    return Promise.resolve({
+      statusCode,
+      body: JSON.stringify(message),
+    });
   }
-
-  return Promise.resolve({
-    statusCode,
-    body: JSON.stringify({ key, valid }),
-  });
 };
