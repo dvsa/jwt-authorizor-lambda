@@ -15,32 +15,7 @@ import * as cognito from '../services/cognito';
  */
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context, callback: Callback):
 Promise<APIGatewayAuthorizerResult> => {
-  const cognitoPoolId: string = process.env.COGNITO_POOL_ID || '';
-  if (!cognitoPoolId) {
-    throw new Error('env var required for cognito pool');
-  }
 
-  const cognitoRegion: string = process.env.COGNITO_REGION || '';
-  if (!cognitoRegion) {
-    throw new Error('env var required for cognito region');
-  }
-
-  const cognitoClientId: string = process.env.COGNITO_CLIENT_ID || '';
-  if (!cognitoClientId) {
-    throw new Error('env var required for cognito client id');
-  }
-
-  cognito.setCredentials(cognitoRegion, cognitoPoolId, cognitoClientId);
-
-  const azureTenantId: string = process.env.AZURE_TENANT_ID || '';
-  if (!azureTenantId) {
-    throw new Error('env var required for azure tenant id');
-  }
-
-  const azureClientId: string = process.env.AZURE_CLIENT_ID || '';
-  if (!azureClientId) {
-    throw new Error('env var required for azure client id');
-  }
 
   azure.setCredentials(azureTenantId, azureClientId);
 
