@@ -1,10 +1,36 @@
 import axios from 'axios';
 import jwkToPem from 'jwk-to-pem';
+import * as jwt from 'jsonwebtoken';
 
 let cacheKeys: MapOfKidToPublicKey | undefined;
+let region: string | undefined;
+let poolId: string | undefined;
+let clientId: string | undefined;
 
-export const getCertificateChain = async (region: string, poolId: string, keyId: string): Promise<string> => {
-  const keys: MapOfKidToPublicKey = await getKeys(region, poolId);
+export const setCredentials = (cognitoRegion: string, cognitoPoolId: string, cognitoClientId: string): void => {
+  region = cognitoRegion;
+  poolId = cognitoPoolId;
+  clientId = cognitoClientId;
+};
+
+export const verify = async (rawToken: string, decodedToken): Promise<boolean> => {
+  const key: string = await getCertificateChain(decodedToken.header.kid);
+
+  jwt.verify(rawToken, key);
+
+  if (decodedToken.payload.client_id !== clientId) {
+    return false;
+  }
+
+  if (decodedToken.payload.token_use !== 'access') {
+    return false;
+  }
+
+  return false;
+};
+
+const getCertificateChain = async (keyId: string): Promise<string> => {
+  const keys: MapOfKidToPublicKey = await getKeys();
   const certificateChain = keys[keyId];
 
   if (!certificateChain) {
@@ -14,12 +40,14 @@ export const getCertificateChain = async (region: string, poolId: string, keyId:
   return certificateChain.pem;
 };
 
-const getKeys = async (region: string, poolId: string): Promise<MapOfKidToPublicKey> => {
+export const getIssuer = (): string => `https://cognito-idp.${region}.amazonaws.com/${poolId}`;
+
+const getKeys = async (): Promise<MapOfKidToPublicKey> => {
   if (cacheKeys) {
     return cacheKeys;
   }
 
-  const cognitoIssuer = `https://cognito-idp.${region}.amazonaws.com/${poolId}`;
+  const cognitoIssuer = getIssuer();
 
   const url = `${cognitoIssuer}/.well-known/jwks.json`;
   const publicKeys = await axios.get<PublicKeys>(url);

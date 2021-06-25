@@ -10,9 +10,11 @@ Resources:
       Runtime: nodejs12.x
       Environment:
         Variables:
-          COGNITO_POOL_ID
-          COGNITO_REGION
-          AZURE_TENANT_ID
+          COGNITO_POOL_ID: ''
+          COGNITO_REGION: ''
+          COGNITO_CLIENT_ID: ''
+          AZURE_TENANT_ID: ''
+          AZURE_CLIENT_ID: ''
 
 Outputs:
 

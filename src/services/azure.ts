@@ -1,7 +1,24 @@
 import axios from 'axios';
+import * as jwt from 'jsonwebtoken';
 
-export const getCertificateChain = async (tenantId: string, keyId: string): Promise<string> => {
-  const keys: Map<string, string> = await getKeys(tenantId);
+export const verify = async (rawToken: string, decodedToken: any) => {
+  const key: string = await getCertificateChain(decodedToken.header.kid);
+  jwt.verify(rawToken, key, { audience: clientId });
+  return true;
+};
+
+const baseUrl = 'https://login.microsoftonline.com';
+
+let tenantId: string | undefined;
+let clientId: string | undefined;
+
+export const setCredentials = (azureTenantId: string, azureClientId: string) => {
+  tenantId = azureTenantId;
+  clientId = azureClientId;
+};
+
+const getCertificateChain = async (keyId: string): Promise<string> => {
+  const keys: Map<string, string> = await getKeys();
 
   const certificateChain = keys.get(keyId);
 
@@ -12,8 +29,10 @@ export const getCertificateChain = async (tenantId: string, keyId: string): Prom
   return certificateChain;
 };
 
-const getKeys = async (tenantId: string): Promise<Map<string, string>> => {
-  const response = await axios.get(`https://login.microsoftonline.com/${tenantId}/discovery/keys`);
+export const getIssuer = (): string => `${baseUrl}/${tenantId}/v2.0`;
+
+const getKeys = async (): Promise<Map<string, string>> => {
+  const response = await axios.get(`${baseUrl}/${tenantId}/discovery/keys`);
 
   const map: Map<string, string> = new Map();
 
