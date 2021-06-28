@@ -1,5 +1,3 @@
-import * as cognito from './cognito';
-
 const config: AuthorizerConfig = {
   cognito: {
     poolId: null,
@@ -28,7 +26,7 @@ export interface AzureConfig {
   clientId: string
 }
 
-export const load = (): AuthorizerConfig => {
+export const loadConfig = (): AuthorizerConfig => {
   config.cognito.poolId = process.env.COGNITO_POOL_ID || '';
   if (!config.cognito.poolId) {
     throw new Error('env var required for cognito pool id');
@@ -50,7 +48,7 @@ export const load = (): AuthorizerConfig => {
   }
 
   config.azure.clientId = process.env.AZURE_CLIENT_ID || '';
-  if (config.azure.clientId) {
+  if (!config.azure.clientId) {
     throw new Error('env var required for azure client id');
   }
 

@@ -6,6 +6,7 @@ import { Action, PolicyStatementFactory } from 'iam-policy-generator';
 import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
 import * as azure from '../services/azure';
 import * as cognito from '../services/cognito';
+import { AuthorizerConfig, loadConfig } from '../services/configuration';
 
 /**
  * Lambda Handler
@@ -15,9 +16,10 @@ import * as cognito from '../services/cognito';
  */
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context, callback: Callback):
 Promise<APIGatewayAuthorizerResult> => {
+  const config: AuthorizerConfig = loadConfig();
 
-
-  azure.setCredentials(azureTenantId, azureClientId);
+  azure.setCredentials(config.azure.tenantId, config.azure.clientId);
+  cognito.setCredentials(config.cognito.region, config.cognito.poolId, config.cognito.clientId);
 
   const rawToken: string = event.authorizationToken;
   const decodedToken = jwt.decode(rawToken, { complete: true });
