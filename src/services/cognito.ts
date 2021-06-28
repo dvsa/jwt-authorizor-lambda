@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import jwkToPem from 'jwk-to-pem';
 import * as jwt from 'jsonwebtoken';
 
@@ -29,6 +29,8 @@ export const verify = async (rawToken: string, decodedToken): Promise<boolean> =
   return false;
 };
 
+export const getIssuer = (): string => `https://cognito-idp.${region}.amazonaws.com/${poolId}`;
+
 const getCertificateChain = async (keyId: string): Promise<string> => {
   const keys: MapOfKidToPublicKey = await getKeys();
   const certificateChain = keys[keyId];
@@ -40,16 +42,12 @@ const getCertificateChain = async (keyId: string): Promise<string> => {
   return certificateChain.pem;
 };
 
-export const getIssuer = (): string => `https://cognito-idp.${region}.amazonaws.com/${poolId}`;
-
 const getKeys = async (): Promise<MapOfKidToPublicKey> => {
   if (cacheKeys) {
     return cacheKeys;
   }
 
-  const cognitoIssuer = getIssuer();
-
-  const url = `${cognitoIssuer}/.well-known/jwks.json`;
+  const url = `${getIssuer()}/.well-known/jwks.json`;
   const publicKeys = await axios.get<PublicKeys>(url);
   cacheKeys = publicKeys.data.keys.reduce((agg, current) => {
     const pem = jwkToPem(current);
@@ -62,7 +60,7 @@ const getKeys = async (): Promise<MapOfKidToPublicKey> => {
   return cacheKeys;
 };
 
-export interface PublicKey {
+interface PublicKey {
   alg: string;
   e: string;
   kid: string;
@@ -76,10 +74,10 @@ interface PublicKeyMeta {
   pem: string;
 }
 
-export interface PublicKeys {
+interface PublicKeys {
   keys: PublicKey[];
 }
 
-export interface MapOfKidToPublicKey {
+interface MapOfKidToPublicKey {
   [key: string]: PublicKeyMeta;
 }
