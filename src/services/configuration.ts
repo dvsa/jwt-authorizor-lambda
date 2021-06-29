@@ -27,29 +27,36 @@ export interface AzureConfig {
 }
 
 export const loadConfig = (): AuthorizerConfig => {
+
+  const errors = [];
+
   config.cognito.poolId = process.env.COGNITO_POOL_ID || '';
   if (!config.cognito.poolId) {
-    throw new Error('env var required for cognito pool id');
+    errors.push('COGNITO_POOL_ID');
   }
 
   config.cognito.region = process.env.COGNITO_REGION || '';
   if (!config.cognito.region) {
-    throw new Error('env var required for cognito region');
+    errors.push('COGNITO_REGION');
   }
 
   config.cognito.clientId = process.env.COGNITO_CLIENT_ID || '';
   if (!config.cognito.clientId) {
-    throw new Error('env var required for cognito client id');
+    errors.push('COGNITO_CLIENT_ID');
   }
 
   config.azure.tenantId = process.env.AZURE_TENANT_ID || '';
   if (!config.azure.tenantId) {
-    throw new Error('env var required for azure tenant id');
+    errors.push('AZURE_TENANT_ID');
   }
 
   config.azure.clientId = process.env.AZURE_CLIENT_ID || '';
   if (!config.azure.clientId) {
-    throw new Error('env var required for azure client id');
+    errors.push('AZURE_CLIENT_ID');
+  }
+
+  if (errors.length !== 0) {
+    throw new Error(`Required env vars are missing: ${JSON.stringify(errors)}`);
   }
 
   return config;
