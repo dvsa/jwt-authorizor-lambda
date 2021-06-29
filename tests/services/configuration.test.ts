@@ -1,4 +1,4 @@
-import { loadConfig, AuthorizerConfig } from '../../../src/services/configuration';
+import { loadConfig, AuthorizerConfig } from '../../src/services/configuration';
 
 describe('Test configuration', () => {
   test('loadConfig() should throw error when cognito pool id env var missing', () => {
@@ -33,6 +33,7 @@ describe('Test configuration', () => {
   test('loadConfig() should return config instance when env vars exist', () => {
     process.env.COGNITO_POOL_ID = 'cognito_pool_id';
     process.env.COGNITO_REGION = 'cognito_region';
+    process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
     process.env.AZURE_TENANT_ID = 'azure_tenant_id';
     process.env.AZURE_CLIENT_ID = 'azure_client_id';
 
