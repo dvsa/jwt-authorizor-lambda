@@ -24,6 +24,10 @@ Promise<APIGatewayAuthorizerResult> => {
   const rawToken: string = event.authorizationToken;
   const decodedToken = jwt.decode(rawToken, { complete: true });
 
+  if (!decodedToken) {
+    throw new Error('Failed decoding jwt');
+  }
+
   let tokenType: any;
 
   switch (decodedToken.payload.iss) {
