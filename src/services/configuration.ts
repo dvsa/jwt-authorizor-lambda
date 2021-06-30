@@ -27,7 +27,6 @@ export interface AzureConfig {
 }
 
 export const loadConfig = (): AuthorizerConfig => {
-
   const errors = [];
 
   config.cognito.poolId = process.env.COGNITO_POOL_ID || '';

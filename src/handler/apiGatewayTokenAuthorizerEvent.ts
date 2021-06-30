@@ -1,12 +1,13 @@
 import type {
   APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Callback, Context,
 } from 'aws-lambda';
-import * as jwt from 'jsonwebtoken';
+import { decode, verify } from 'jsonwebtoken';
 import { Action, PolicyStatementFactory } from 'iam-policy-generator';
 import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
-import * as azure from '../services/azure';
-import * as cognito from '../services/cognito';
 import { AuthorizerConfig, loadConfig } from '../services/configuration';
+import { Cognito } from '../services/cognito';
+import { Azure } from '../services/azure';
+import { Jwt } from '../types/types';
 
 /**
  * Lambda Handler
@@ -17,18 +18,16 @@ import { AuthorizerConfig, loadConfig } from '../services/configuration';
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context, callback: Callback):
 Promise<APIGatewayAuthorizerResult> => {
   const config: AuthorizerConfig = loadConfig();
-
-  azure.setCredentials(config.azure.tenantId, config.azure.clientId);
-  cognito.setCredentials(config.cognito.region, config.cognito.poolId, config.cognito.clientId);
-
+  const cognito: Cognito = new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId);
+  const azure: Azure = new Azure(config.azure.tenantId, config.azure.clientId);
   const rawToken: string = event.authorizationToken;
-  const decodedToken = jwt.decode(rawToken, { complete: true });
+  const decodedToken: Jwt = decode(rawToken, { complete: true }) as Jwt;
 
   if (!decodedToken) {
     throw new Error('Failed decoding jwt');
   }
 
-  let tokenType: any;
+  let tokenType: Azure | Cognito;
 
   switch (decodedToken.payload.iss) {
     case cognito.getIssuer():
@@ -38,7 +37,7 @@ Promise<APIGatewayAuthorizerResult> => {
       tokenType = azure;
       break;
     default:
-      callback('Token issuer not accepted');
+      callback(`Token issuer: '${decodedToken.payload.iss}' not accepted`);
   }
 
   try {
@@ -51,17 +50,15 @@ Promise<APIGatewayAuthorizerResult> => {
 };
 
 const authorisedPolicy = (arn: string): APIGatewayAuthorizerResult => {
-  const statement = new PolicyStatementFactory()
-    .setEffect(Effect.ALLOW)
-    .addAction(Action.API_GATEWAY.INVOKE)
-    .addResource(arn)
-    .build();
-
   return {
     principalId: 'Authorised',
     policyDocument: {
       Version: '2012-10-17',
-      Statement: [statement.toStatementJson()],
+      Statement: [{
+        Effect: Effect.ALLOW,
+        Action: Action.API_GATEWAY.INVOKE,
+        Resource: arn,
+      }],
     },
   };
 };
