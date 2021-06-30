@@ -8,6 +8,7 @@ import { AuthorizerConfig, loadConfig } from '../services/configuration';
 import { Cognito } from '../services/cognito';
 import { Azure } from '../services/azure';
 import { Jwt } from '../types/types';
+import { createLogger, Logger } from '../util/logger';
 
 /**
  * Lambda Handler
@@ -18,8 +19,9 @@ import { Jwt } from '../types/types';
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context, callback: Callback):
 Promise<APIGatewayAuthorizerResult> => {
   const config: AuthorizerConfig = loadConfig();
-  const cognito: Cognito = new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId);
-  const azure: Azure = new Azure(config.azure.tenantId, config.azure.clientId);
+  const logger: Logger = createLogger(context);
+  const cognito: Cognito = new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger);
+  const azure: Azure = new Azure(config.azure.tenantId, config.azure.clientId, logger);
   const rawToken: string = event.authorizationToken;
   const decodedToken: Jwt = decode(rawToken, { complete: true }) as Jwt;
 
@@ -39,11 +41,15 @@ Promise<APIGatewayAuthorizerResult> => {
     default:
       callback(`Token issuer: '${decodedToken.payload.iss}' not accepted`);
   }
-
+  let validToken: boolean;
   try {
-    await tokenType.verify(rawToken, decodedToken);
+    validToken = await tokenType.verify(rawToken, decodedToken);
   } catch (err) {
     callback(err.message);
+  }
+
+  if (!validToken) {
+    callback('Invalid jwt provided');
   }
 
   return authorisedPolicy(event.methodArn);

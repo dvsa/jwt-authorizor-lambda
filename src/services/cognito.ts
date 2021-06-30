@@ -1,8 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
 import jwkToPem from 'jwk-to-pem';
 import * as jwt from 'jsonwebtoken';
+import { Jwt } from '../types/types';
+import { Logger } from '../util/logger';
 
-interface PublicKey {
+export interface PublicKey {
   alg: string;
   e: string;
   kid: string;
@@ -11,12 +13,12 @@ interface PublicKey {
   use: string;
 }
 
-interface PublicKeyMeta {
+export interface PublicKeyMeta {
   instance: PublicKey;
   pem: string;
 }
 
-interface PublicKeys {
+export interface PublicKeys {
   keys: PublicKey[];
 }
 
@@ -33,25 +35,35 @@ export class Cognito {
 
   cacheKeys: MapOfKidToPublicKey | undefined;
 
-  constructor(region: string, poolId: string, clientId: string) {
+  logger: Logger;
+
+  constructor(region: string, poolId: string, clientId: string, logger: Logger) {
     this.region = region;
     this.poolId = poolId;
     this.clientId = clientId;
+    this.logger = logger;
   }
 
-  public async verify(rawToken: string, decodedToken): Promise<boolean> {
-    const key: string = await this.getCertificateChain(decodedToken.header.kid);
-    jwt.verify(rawToken, key);
+  public async verify(rawToken: string, decodedToken: Jwt): Promise<boolean> {
+    try {
+      const key: string = await this.getCertificateChain(decodedToken.header.kid);
+      jwt.verify(rawToken, key);
+    } catch (err) {
+      this.logger.info(`Failed to verify jwt:: ${err.message}`);
+      return false;
+    }
 
     if (decodedToken.payload.client_id !== this.clientId) {
+      this.logger.info("Failed to verify jwt:: contains invalid 'client_id' ");
       return false;
     }
 
     if (decodedToken.payload.token_use !== 'access') {
+      this.logger.info("Failed to verify jwt:: contains invalid 'token_use'");
       return false;
     }
 
-    return false;
+    return true;
   }
 
   public getIssuer(): string {

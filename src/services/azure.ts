@@ -1,23 +1,32 @@
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
+import { Logger } from "../util/logger";
 
 export class Azure {
   tenantId: string;
 
   clientId: string;
 
+  logger: Logger;
+
   baseUrl = 'https://login.microsoftonline.com';
 
   cacheKeys: Map<string, string> | undefined;
 
-  constructor(tenantId: string, clientId: string) {
+  constructor(tenantId: string, clientId: string, logger: Logger) {
     this.tenantId = tenantId;
     this.clientId = clientId;
+    this.logger = logger;
   }
 
   public async verify(rawToken: string, decodedToken): Promise<boolean> {
-    const key: string = await this.getCertificateChain(decodedToken.header.kid);
-    jwt.verify(rawToken, key, { audience: this.clientId });
+    try {
+      const key: string = await this.getCertificateChain(decodedToken.header.kid);
+      jwt.verify(rawToken, key, { audience: this.clientId });
+    } catch (err) {
+      this.logger.info('')
+      return false;
+    }
     return true;
   }
 
