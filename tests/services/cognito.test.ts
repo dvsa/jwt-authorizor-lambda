@@ -3,12 +3,17 @@ import * as jwt from 'jsonwebtoken';
 import { loadConfig, AuthorizerConfig } from '../../src/services/configuration';
 import { Cognito, PublicKeys } from '../../src/services/cognito';
 import { Jwt, JwtPayload } from '../../src/types/types';
+import { createLogger, Logger } from '../../src/util/logger';
+
+jest.mock('axios');
+console.info = jest.fn();
 
 let config: AuthorizerConfig;
 let cognito: Cognito;
-jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const logger: Logger = new Logger('');
+const loggerPrefix = 'Failed to verify jwt::';
 
 const privateKey: string = '-----BEGIN RSA PRIVATE KEY-----\n'
   + 'MIIEowIBAAKCAQEA0Ttga33B1yX4w77NbpKyNYDNSVCo8j+RlZaZ9tI+KfkV1d+t\n'
@@ -38,18 +43,6 @@ const privateKey: string = '-----BEGIN RSA PRIVATE KEY-----\n'
   + 'X4nLcSbZtO0tcDGMfMpWF2JGYOEJQNetPozL/ICGVFyIO8yzXm8U\n'
   + '-----END RSA PRIVATE KEY-----';
 
-const keys: PublicKeys = {
-  keys: [{
-    kid: '1234example=',
-    alg: 'RS256',
-    kty: 'RSA',
-    e: 'AQAB',
-    // eslint-disable-next-line max-len
-    n: '0Ttga33B1yX4w77NbpKyNYDNSVCo8j-RlZaZ9tI-KfkV1d-tfsvI9ZPAheP11FoN52ceBaY5ltelHW-IKwCfyT0orLdsxLgowaXki9woF1Azvcg2JVxQLv9aVjjAvy3CZFIG_EeN7J3nsyCXGnu1yMEbnvkWxA88__Q6HQ2K9wqfApkQ0LNlsK0YHz_sfjHNvRKxnbAJk7D5fUhZunPZXOPHXFgA5SvLvMaNIXduMKJh4OMfuoLdJowXJAR9j31Mqz_is4FMhm_9Mq7vZZ-uF09htRvIR8tRY28oJuW1gKWyg7cQQpnjHgFyG3XLXWAeXclWqyh_LfjyHQjrYhyeFw',
-    use: 'sig',
-  }],
-};
-
 const response = {
   keys: [
     {
@@ -72,8 +65,11 @@ describe('Test Cognito', () => {
     process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
     process.env.AZURE_TENANT_ID = 'azure_tenant_id';
     process.env.AZURE_CLIENT_ID = 'azure_client_id';
+
     config = loadConfig();
-    cognito = new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId);
+    cognito = new Cognito(
+      config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger,
+    );
   });
 
   test('getIssuer() should return url with pool id and region', () => {
@@ -108,6 +104,10 @@ describe('Test Cognito', () => {
     mockedAxios.get.mockResolvedValue({ data: response });
 
     expect(await cognito.verify(token, decodedToken)).toBe(false);
+    expect(console.info).toHaveBeenLastCalledWith(
+      logger.logFormat,
+      `${loggerPrefix} jwt expired`,
+    );
   });
 
   test('verify() should return false for invalid client_id', async () => {
@@ -125,6 +125,10 @@ describe('Test Cognito', () => {
     mockedAxios.get.mockResolvedValue({ data: response });
 
     expect(await cognito.verify(token, decodedToken)).toBe(false);
+    expect(console.info).toHaveBeenLastCalledWith(
+      logger.logFormat,
+      `${loggerPrefix} contains invalid 'client_id'`,
+    );
   });
 
   test('verify() should return false for invalid token_use', async () => {
@@ -142,6 +146,10 @@ describe('Test Cognito', () => {
     mockedAxios.get.mockResolvedValue({ data: response });
 
     expect(await cognito.verify(token, decodedToken)).toBe(false);
+    expect(console.info).toHaveBeenLastCalledWith(
+      logger.logFormat,
+      `${loggerPrefix} contains invalid 'token_use'`,
+    );
   });
 
   test('verify() should return false for invalid key', async () => {
@@ -159,5 +167,9 @@ describe('Test Cognito', () => {
     mockedAxios.get.mockResolvedValue({ data: response });
 
     expect(await cognito.verify(token, decodedToken)).toBe(false);
+    expect(console.info).toHaveBeenLastCalledWith(
+      logger.logFormat,
+      `${loggerPrefix} no public key with ID 'key' under pool cognito_pool_id`,
+    );
   });
 });

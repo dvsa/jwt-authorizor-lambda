@@ -54,7 +54,7 @@ export class Cognito {
     }
 
     if (decodedToken.payload.client_id !== this.clientId) {
-      this.logger.info("Failed to verify jwt:: contains invalid 'client_id' ");
+      this.logger.info("Failed to verify jwt:: contains invalid 'client_id'");
       return false;
     }
 
