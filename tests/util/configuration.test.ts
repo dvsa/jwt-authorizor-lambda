@@ -1,4 +1,4 @@
-import { loadConfig, AuthorizerConfig } from '../../src/services/configuration';
+import { loadConfig, AuthorizerConfig } from '../../src/util/configuration';
 
 describe('Test configuration', () => {
   test('loadConfig() should throw error when cognito pool id env var missing', () => {

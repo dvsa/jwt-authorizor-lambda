@@ -26,7 +26,7 @@ interface MapOfKidToPublicKey {
   [key: string]: PublicKeyMeta;
 }
 
-export class Cognito {
+export default class Cognito {
   region: string;
 
   poolId: string;

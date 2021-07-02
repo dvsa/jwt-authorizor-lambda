@@ -1,14 +1,13 @@
 import type {
-  APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Callback, Context,
+  APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context,
 } from 'aws-lambda';
-import { decode, verify } from 'jsonwebtoken';
-import { Action, PolicyStatementFactory } from 'iam-policy-generator';
+import { Action } from 'iam-policy-generator';
 import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
-import { AuthorizerConfig, loadConfig } from '../services/configuration';
-import { Cognito } from '../services/cognito';
+import { AuthorizerConfig, loadConfig } from '../util/configuration';
+import Cognito from '../services/cognito';
 import { Azure } from '../services/azure';
-import { Jwt } from '../types/types';
 import { createLogger, Logger } from '../util/logger';
+import TokenVerifier from '../services/tokenVerifier';
 
 /**
  * Lambda Handler
@@ -16,55 +15,58 @@ import { createLogger, Logger } from '../util/logger';
  * @param {APIGatewayTokenAuthorizerEvent} event
  * @returns {Promise<APIGatewayAuthorizerResult>}
  */
-export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context, callback: Callback):
+export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context):
 Promise<APIGatewayAuthorizerResult> => {
   const config: AuthorizerConfig = loadConfig();
   const logger: Logger = createLogger(context);
-  const cognito: Cognito = new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger);
-  const azure: Azure = new Azure(config.azure.tenantId, config.azure.clientId, logger);
-  const rawToken: string = event.authorizationToken;
-  const decodedToken: Jwt = decode(rawToken, { complete: true }) as Jwt;
+  const verifier = new TokenVerifier(
+    new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger),
+    new Azure(config.azure.tenantId, config.azure.clientId, logger),
+    logger,
+  );
 
-  if (!decodedToken) {
-    throw new Error('Failed decoding jwt');
+  if (!event.authorizationToken) {
+    logger.error('no caller-supplied-token (no authorization header on original request)');
   }
 
-  let tokenType: Azure | Cognito;
-
-  switch (decodedToken.payload.iss) {
-    case cognito.getIssuer():
-      tokenType = cognito;
-      break;
-    case azure.getIssuer():
-      tokenType = azure;
-      break;
-    default:
-      callback(`Token issuer: '${decodedToken.payload.iss}' not accepted`);
-  }
-  let validToken: boolean;
-  try {
-    validToken = await tokenType.verify(rawToken, decodedToken);
-  } catch (err) {
-    callback(err.message);
+  const [bearerPrefix, token] = event.authorizationToken.split(' ');
+  if (bearerPrefix !== 'Bearer') {
+    logger.error("caller-supplied-token must start with 'Bearer ' (case-sensitive)");
+    return unauthorisedPolicy(event.methodArn);
   }
 
-  if (!validToken) {
-    callback('Invalid jwt provided');
+  if (!token || !token.trim()) {
+    logger.error("'Bearer ' prefix present, but token is blank or missing");
+    return unauthorisedPolicy(event.methodArn);
   }
 
-  return authorisedPolicy(event.methodArn);
+  if (await verifier.verify(token)) {
+    return authorisedPolicy(event.methodArn);
+  }
+
+  return unauthorisedPolicy(event.methodArn);
 };
 
-const authorisedPolicy = (arn: string): APIGatewayAuthorizerResult => {
-  return {
-    principalId: 'Authorised',
-    policyDocument: {
-      Version: '2012-10-17',
-      Statement: [{
-        Effect: Effect.ALLOW,
-        Action: Action.API_GATEWAY.INVOKE,
-        Resource: arn,
-      }],
-    },
-  };
-};
+const authorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
+  principalId: 'Authorised',
+  policyDocument: {
+    Version: '2012-10-17',
+    Statement: [{
+      Effect: Effect.ALLOW,
+      Action: Action.API_GATEWAY.INVOKE,
+      Resource: arn,
+    }],
+  },
+});
+
+const unauthorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
+  principalId: 'Unauthorised',
+  policyDocument: {
+    Version: '2012-10-17',
+    Statement: [{
+      Effect: Effect.DENY,
+      Action: Action.API_GATEWAY.INVOKE,
+      Resource: arn,
+    }],
+  },
+});

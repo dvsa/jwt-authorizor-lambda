@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import { loadConfig, AuthorizerConfig } from '../../src/services/configuration';
+import { loadConfig, AuthorizerConfig } from '../../src/util/configuration';
 import { Jwt, JwtPayload } from '../../src/types/types';
 import { createLogger, Logger } from '../../src/util/logger';
 import { Azure } from '../../src/services/azure';

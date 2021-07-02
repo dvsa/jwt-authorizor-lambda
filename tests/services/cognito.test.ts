@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import { loadConfig, AuthorizerConfig } from '../../src/services/configuration';
-import { Cognito, PublicKeys } from '../../src/services/cognito';
+import { loadConfig, AuthorizerConfig } from '../../src/util/configuration';
+import Cognito, { PublicKeys } from '../../src/services/cognito';
 import { Jwt, JwtPayload } from '../../src/types/types';
 import { createLogger, Logger } from '../../src/util/logger';
 
