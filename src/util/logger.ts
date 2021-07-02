@@ -1,5 +1,3 @@
-import type { Context } from 'aws-lambda';
-
 export class Logger {
   logFormat: string;
 
@@ -23,5 +21,3 @@ export class Logger {
     console.error(this.logFormat, msg);
   }
 }
-
-export const createLogger = (context: Context): Logger => new Logger(context.awsRequestId);

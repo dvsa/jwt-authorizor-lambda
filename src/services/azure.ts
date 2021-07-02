@@ -1,6 +1,6 @@
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import { Logger } from "../util/logger";
+import { Logger } from '../util/logger';
 
 export class Azure {
   tenantId: string;

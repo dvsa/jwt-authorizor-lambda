@@ -3,11 +3,11 @@ import type {
 } from 'aws-lambda';
 import { Action } from 'iam-policy-generator';
 import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
-import { AuthorizerConfig, loadConfig } from '../util/configuration';
-import Cognito from '../services/cognito';
+import { loadConfig } from '../util/configuration';
+import { Cognito } from '../services/cognito';
 import { Azure } from '../services/azure';
-import { createLogger, Logger } from '../util/logger';
-import TokenVerifier from '../services/tokenVerifier';
+import { Logger } from '../util/logger';
+import { TokenVerifier } from '../services/tokenVerifier';
 
 /**
  * Lambda Handler
@@ -17,16 +17,17 @@ import TokenVerifier from '../services/tokenVerifier';
  */
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context):
 Promise<APIGatewayAuthorizerResult> => {
-  const config: AuthorizerConfig = loadConfig();
-  const logger: Logger = createLogger(context);
+  const config = loadConfig();
+  const logger = new Logger(context.awsRequestId);
   const verifier = new TokenVerifier(
     new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger),
     new Azure(config.azure.tenantId, config.azure.clientId, logger),
     logger,
   );
 
-  if (!event.authorizationToken) {
+  if (!event.authorizationToken.trim()) {
     logger.error('no caller-supplied-token (no authorization header on original request)');
+    return unauthorisedPolicy(event.methodArn);
   }
 
   const [bearerPrefix, token] = event.authorizationToken.split(' ');

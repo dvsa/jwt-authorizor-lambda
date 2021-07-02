@@ -1,19 +1,6 @@
-import type { Context } from 'aws-lambda';
-import { v4 } from 'uuid';
-import { createLogger, Logger } from '../../src/util/logger';
+import { Logger } from '../../src/util/logger';
 
 describe('Test logger', () => {
-  test('createLogger() via context lambdaId should return a logger object with the correct logFormat', () => {
-    const awsRequestId: string = v4();
-    const contextMock: Context = <Context> { awsRequestId };
-
-    const logger: Logger = createLogger(contextMock);
-
-    expect(logger.logFormat).toBe(
-      `{ "awsRequestId": "${awsRequestId}", "message": "%s" }`,
-    );
-  });
-
   test('logger.debug() calls console.debug() with expected parameters', () => {
     const logger: Logger = new Logger('');
     console.debug = jest.fn();
