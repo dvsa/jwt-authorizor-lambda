@@ -40,5 +40,6 @@ describe('Test tokenVerifier', () => {
     const res = await sut.verify(jwt.sign({ iss: 'https://cognito-idp.region.amazonaws.com/poolId' }, 'secret'));
     expect(cognitoSpy).toHaveBeenCalled();
     expect(azureSpy).not.toHaveBeenCalled();
+    // note res will be false cos the key is not correct
   });
 });
