@@ -70,7 +70,7 @@ export class Cognito {
     return `https://cognito-idp.${this.region}.amazonaws.com/${this.poolId}`;
   }
 
-  protected async getCertificateChain(keyId: string): Promise<string> {
+  public async getCertificateChain(keyId: string): Promise<string> {
     const keys: MapOfKidToPublicKey = await this.getKeys();
     const certificateChain = keys[keyId];
 

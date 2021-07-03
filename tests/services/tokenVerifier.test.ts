@@ -5,46 +5,18 @@ import { Cognito } from '../../src/services/cognito';
 import { Azure } from '../../src/services/azure';
 import { Logger } from '../../src/util/logger';
 
-jest.mock('../../src/services/cognito', () => {
-  return {
-    Cognito: jest.fn().mockImplementation(() => {
-      return {
-        verify: () => true,
-        getIssuer: () => 'https://cognito-idp.region.amazonaws.com/pool_id',
-      };
-    }),
-  };
-});
-jest.mock('../../src/services/azure', () => {
-  return {
-    Azure: jest.fn().mockImplementation(() => {
-      return {
-        verify: () => true,
-        getIssuer: () => 'https://cognito-idp.cognito_region.amazonaws.com/cognito_pool_id',
-      };
-    }),
-  };
-});
-jest.mock('../../src/util/logger', () => {
-  return {
-    Logger: jest.fn().mockImplementation(() => {
-      return {
-        debug: () => {},
-        info: () => {},
-        warn: () => {},
-        error: () => {},
-      };
-    }),
-  };
-});
+jest.mock('../../src/util/logger', () => ({
+  Logger: jest.fn().mockImplementation(() => ({
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+  })),
+}));
 
 describe('Test tokenVerifier', () => {
-  const MockedCognito = mocked(Cognito, true);
-  const MockedAzure = mocked(Azure, true);
   const MockedLogger = mocked(Logger, true);
   beforeEach(() => {
-    MockedAzure.mockClear();
-    MockedCognito.mockClear();
     MockedLogger.mockClear();
     MockedLogger.mockClear();
   });
@@ -62,11 +34,11 @@ describe('Test tokenVerifier', () => {
     const logger = new Logger('');
     const cognito = new Cognito('region', 'poolId', 'clientId', logger);
     const azure = new Azure('tenantId', 'clientId', logger);
+    const cognitoSpy = jest.spyOn(cognito, 'verify');
+    const azureSpy = jest.spyOn(azure, 'verify');
     const sut = new TokenVerifier(cognito, azure, logger);
-
-    const res = await sut.verify(jwt.sign({ iss: 'https://cognito-idp.region.amazonaws.com/pool_id' }, 'secret'));
-    expect(MockedCognito).toHaveBeenCalled();
-    expect(MockedAzure).not.toHaveBeenCalled();
-    expect(res).toBe(true);
+    const res = await sut.verify(jwt.sign({ iss: 'https://cognito-idp.region.amazonaws.com/poolId' }, 'secret'));
+    expect(cognitoSpy).toHaveBeenCalled();
+    expect(azureSpy).not.toHaveBeenCalled();
   });
 });

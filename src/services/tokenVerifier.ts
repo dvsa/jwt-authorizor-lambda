@@ -25,17 +25,15 @@ export class TokenVerifier {
     return decodedToken;
   }
 
-  public async verify(rawToken: string) {
+  public async verify(rawToken: string):Promise<boolean> {
     try {
       const decodedToken = this.decode(rawToken);
-      let result;
       switch (decodedToken.payload.iss) {
         case this.cognito.getIssuer():
+          console.log(rawToken);
           return await this.cognito.verify(rawToken, decodedToken);
-          break;
         case this.azure.getIssuer():
           return await this.azure.verify(rawToken, decodedToken);
-          break;
         default:
           throw new Error(`Token issuer '${decodedToken.payload.iss}' not accepted`);
       }
