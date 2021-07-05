@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import createJWKSMock from 'mock-jwks';
 import { mocked } from 'ts-jest/utils';
 import { TokenVerifier } from '../../src/services/tokenVerifier';
 import { Cognito } from '../../src/services/cognito';
@@ -16,57 +17,73 @@ jest.mock('../../src/util/logger', () => ({
 
 describe('Test tokenVerifier', () => {
   const MockedLogger = mocked(Logger, true);
+
   beforeEach(() => {
     MockedLogger.mockClear();
   });
 
   test('decode() throws error when fails to decode jwt', () => {
-    const logger = new Logger('');
-    const cognito = new Cognito('region', 'poolId', 'clientId', logger);
-    const azure = new Azure('tenantId', 'clientId', logger);
-    const sut = new TokenVerifier(cognito, azure, logger);
+    // Setup sut
+    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
 
-    expect(() => sut.decode('token')).toThrow('Failed to decode provided JWT');
+    expect(() => tokenVerifier.decode('token')).toThrow('Failed to decode provided JWT');
   });
 
   test('verify() to call cognito.verify for a cognito JWT', async () => {
-    const logger = new Logger('');
-    const cognito = new Cognito('region', 'poolId', 'clientId', logger);
-    const azure = new Azure('tenantId', 'clientId', logger);
+    const jwks = createJWKSMock('https://cognito-idp.region.amazonaws.com/pool_id');
+    jwks.start();
+
+    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
+
+    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
-    const sut = new TokenVerifier(cognito, azure, logger);
-    const res = await sut.verify(jwt.sign({ iss: cognito.getIssuer() }, 'secret'));
+
+    const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
+
+    const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
+    const res = await tokenVerifier.verify(token);
+    await jwks.stop();
+
     expect(cognitoSpy).toHaveBeenCalled();
     expect(azureSpy).not.toHaveBeenCalled();
-    // note res will be false cos the key is not correct
+    expect(res).toBe(true);
   });
 
   test('verify() to call azure.verify for a cognito JWT', async () => {
-    const logger = new Logger('');
-    const cognito = new Cognito('region', 'poolId', 'clientId', logger);
-    const azure = new Azure('tenantId', 'clientId', logger);
+    const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/keys');
+    jwks.start();
+
+    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
+
+    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
-    const sut = new TokenVerifier(cognito, azure, logger);
-    const res = await sut.verify(jwt.sign({ iss: azure.getIssuer() }, 'secret'));
+    const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
+
+    const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
+    const res = await tokenVerifier.verify(token);
 
     expect(azureSpy).toHaveBeenCalled();
     expect(cognitoSpy).not.toHaveBeenCalled();
-    // note res will be false cos the key is not correct
+    expect(res).toBe(true);
   });
 
   test('verify() returns false when issuer is not accepted', async () => {
     const logger = new Logger('');
-    const cognito = new Cognito('region', 'poolId', 'clientId', logger);
-    const azure = new Azure('tenantId', 'clientId', logger);
-    const cognitoSpy = jest.spyOn(cognito, 'verify');
-    const azureSpy = jest.spyOn(azure, 'verify');
     const loggerSpy = jest.spyOn(logger, 'info');
 
-    const sut = new TokenVerifier(cognito, azure, logger);
-    const res = await sut.verify(jwt.sign({ iss: 'incorrect' }, 'secret'));
+    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    const cognitoSpy = jest.spyOn(cognito, 'verify');
+
+    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azureSpy = jest.spyOn(azure, 'verify');
+
+    const tokenVerifier = new TokenVerifier(cognito, azure, logger);
+    const res = await tokenVerifier.verify(jwt.sign({ iss: 'incorrect' }, 'secret'));
 
     expect(azureSpy).not.toHaveBeenCalled();
     expect(cognitoSpy).not.toHaveBeenCalled();

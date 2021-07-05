@@ -38,7 +38,6 @@ describe('Test Cognito', () => {
   test('verify() should return true for correct jwt', async () => {
     // Setup sut
     const logger = new Logger('');
-    const loggerSpy = jest.spyOn(logger, 'info');
     const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
 
     // Setup token
