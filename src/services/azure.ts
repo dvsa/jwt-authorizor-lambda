@@ -1,5 +1,5 @@
-import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
+import JwksClient from 'jwks-rsa';
 import { Logger } from '../util/logger';
 
 export class Azure {
@@ -11,8 +11,6 @@ export class Azure {
 
   baseUrl = 'https://login.microsoftonline.com';
 
-  cacheKeys: Map<string, string> | undefined;
-
   constructor(tenantId: string, clientId: string, logger: Logger) {
     this.tenantId = tenantId;
     this.clientId = clientId;
@@ -21,7 +19,7 @@ export class Azure {
 
   public async verify(rawToken: string, decodedToken): Promise<boolean> {
     try {
-      const key: string = await this.getCertificateChain(decodedToken.header.kid);
+      const key: string = await this.getPublicKey(decodedToken.header.kid);
       jwt.verify(rawToken, key, { audience: this.clientId });
     } catch (err) {
       this.logger.info(`Failed to verify jwt:: ${err.message}`);
@@ -34,34 +32,12 @@ export class Azure {
     return `${this.baseUrl}/${this.tenantId}/v2.0`;
   }
 
-  protected async getCertificateChain(keyId: string): Promise<string> {
-    const keys: Map<string, string> = await this.getKeys();
+  protected async getPublicKey(keyId: string): Promise<string> {
+    const jwksClient = JwksClient({
+      jwksUri: `${this.baseUrl}/${this.tenantId}/discovery/keys`,
+    });
+    const key = await jwksClient.getSigningKey(keyId);
 
-    const certificateChain = keys.get(keyId);
-
-    if (!certificateChain) {
-      throw new Error(`no public key with ID '${keyId}' under tenant ${this.tenantId}`);
-    }
-
-    return certificateChain;
-  }
-
-  protected async getKeys(): Promise<Map<string, string>> {
-    if (this.cacheKeys) {
-      return this.cacheKeys;
-    }
-
-    const response = await axios.get(`${this.baseUrl}/${this.tenantId}/discovery/keys`);
-
-    this.cacheKeys = new Map();
-
-    for (const key of response.data.keys) {
-      const keyId = key.kid;
-      const certificateChain = `-----BEGIN CERTIFICATE-----\n${key.x5c[0]}\n-----END CERTIFICATE-----`;
-
-      this.cacheKeys.set(keyId, certificateChain);
-    }
-
-    return this.cacheKeys;
+    return key.getPublicKey();
   }
 }
