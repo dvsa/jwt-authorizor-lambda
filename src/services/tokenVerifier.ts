@@ -30,7 +30,6 @@ export class TokenVerifier {
       const decodedToken = this.decode(rawToken);
       switch (decodedToken.payload.iss) {
         case this.cognito.getIssuer():
-          console.log(rawToken);
           return await this.cognito.verify(rawToken, decodedToken);
         case this.azure.getIssuer():
           return await this.azure.verify(rawToken, decodedToken);
