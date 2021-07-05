@@ -13,6 +13,7 @@ import { TokenVerifier } from '../services/tokenVerifier';
  * Lambda Handler
  *
  * @param {APIGatewayTokenAuthorizerEvent} event
+ * @param {Context} context
  * @returns {Promise<APIGatewayAuthorizerResult>}
  */
 export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Context):

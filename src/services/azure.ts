@@ -1,6 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
 import { Logger } from '../util/logger';
+import { Jwt } from '../types/jwt';
 
 export class Azure {
   tenantId: string;
@@ -17,7 +18,7 @@ export class Azure {
     this.logger = logger;
   }
 
-  public async verify(rawToken: string, decodedToken): Promise<boolean> {
+  public async verify(rawToken: string, decodedToken: Jwt): Promise<boolean> {
     try {
       const key: string = await this.getPublicKey(decodedToken.header.kid);
       jwt.verify(rawToken, key, { audience: this.clientId });

@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
-import { Jwt } from '../types/types';
 import { Logger } from '../util/logger';
+import { Jwt } from '../types/jwt';
 
 export class Cognito {
   region: string;

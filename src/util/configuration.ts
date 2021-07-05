@@ -1,4 +1,6 @@
-const config: AuthorizerConfig = {
+import { Configuration } from '../types/configuration';
+
+const config: Configuration = {
   cognito: {
     poolId: null,
     region: null,
@@ -10,23 +12,7 @@ const config: AuthorizerConfig = {
   },
 };
 
-export interface AuthorizerConfig {
-  cognito: CognitoConfig
-  azure: AzureConfig
-}
-
-export interface CognitoConfig {
-  poolId: string,
-  region: string,
-  clientId: string
-}
-
-export interface AzureConfig {
-  tenantId: string,
-  clientId: string
-}
-
-export const loadConfig = (): AuthorizerConfig => {
+export const loadConfig = (): Configuration => {
   const errors = [];
 
   config.cognito.poolId = process.env.COGNITO_POOL_ID || '';

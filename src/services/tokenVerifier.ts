@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import { Cognito } from './cognito';
 import { Azure } from './azure';
 import { Logger } from '../util/logger';
-import { Jwt } from '../types/types';
+import { Jwt } from '../types/jwt';
 
 export class TokenVerifier {
   cognito: Cognito;
@@ -18,7 +18,7 @@ export class TokenVerifier {
   }
 
   public decode(token: string): Jwt {
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken: Jwt = jwt.decode(token, { complete: true });
     if (!decodedToken) {
       throw new Error('Failed to decode provided JWT');
     }
