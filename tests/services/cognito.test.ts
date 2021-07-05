@@ -60,27 +60,18 @@ const response = {
 describe('Test Cognito', () => {
   jest.mock('axios');
   beforeEach(() => {
-    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
-    process.env.COGNITO_REGION = 'cognito_region';
-    process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
-    process.env.AZURE_TENANT_ID = 'azure_tenant_id';
-    process.env.AZURE_CLIENT_ID = 'azure_client_id';
-
-    config = loadConfig();
-    cognito = new Cognito(
-      config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger,
-    );
+    cognito = new Cognito('region', 'pool_id', 'client_id', logger);
   });
 
   test('getIssuer() should return url with pool id and region', () => {
-    expect(cognito.getIssuer()).toBe('https://cognito-idp.cognito_region.amazonaws.com/cognito_pool_id');
+    expect(cognito.getIssuer()).toBe('https://cognito-idp.region.amazonaws.com/pool_id');
   });
 
   test('verify() should return true for correct jwt', async () => {
     const payload: JwtPayload = {
       iss: cognito.getIssuer(),
       token_use: 'access',
-      client_id: config.cognito.clientId,
+      client_id: 'client_id',
     };
     const token = jwt.sign(payload, privateKey, { expiresIn: '1h', keyid: '1234example=', algorithm: 'RS256' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
@@ -93,7 +84,7 @@ describe('Test Cognito', () => {
     const payload: JwtPayload = {
       iss: cognito.getIssuer(),
       token_use: 'access',
-      client_id: config.cognito.clientId,
+      client_id: 'client_id',
     };
     const token: string = jwt.sign(payload, privateKey, {
       expiresIn: -60,
@@ -135,7 +126,7 @@ describe('Test Cognito', () => {
     const payload: JwtPayload = {
       iss: cognito.getIssuer(),
       token_use: 'incorrect',
-      client_id: config.cognito.clientId,
+      client_id: 'client_id',
     };
     const token: string = jwt.sign(payload, privateKey, {
       expiresIn: '1h',
@@ -156,7 +147,7 @@ describe('Test Cognito', () => {
     const payload: JwtPayload = {
       iss: cognito.getIssuer(),
       token_use: 'incorrect',
-      client_id: config.cognito.clientId,
+      client_id: 'client_id',
     };
     const token: string = jwt.sign(payload, privateKey, {
       expiresIn: '1h',
@@ -169,7 +160,7 @@ describe('Test Cognito', () => {
     expect(await cognito.verify(token, decodedToken)).toBe(false);
     expect(console.info).toHaveBeenLastCalledWith(
       logger.logFormat,
-      `${loggerPrefix} no public key with ID 'key' under pool cognito_pool_id`,
+      `${loggerPrefix} no public key with ID 'key' under pool pool_id`,
     );
   });
 });

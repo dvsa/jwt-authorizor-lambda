@@ -18,7 +18,6 @@ describe('Test tokenVerifier', () => {
   const MockedLogger = mocked(Logger, true);
   beforeEach(() => {
     MockedLogger.mockClear();
-    MockedLogger.mockClear();
   });
 
   test('decode() throws error when fails to decode jwt', () => {

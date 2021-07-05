@@ -1,6 +1,5 @@
 import axios from 'axios';
 import * as jwt from 'jsonwebtoken';
-import { loadConfig, AuthorizerConfig } from '../../src/util/configuration';
 import { Jwt, JwtPayload } from '../../src/types/types';
 import { Logger } from '../../src/util/logger';
 import { Azure } from '../../src/services/azure';
@@ -8,7 +7,6 @@ import { Azure } from '../../src/services/azure';
 jest.mock('axios');
 console.info = jest.fn();
 
-let config: AuthorizerConfig;
 let azure: Azure;
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -64,25 +62,17 @@ const response = {
 describe('Test Azure', () => {
   jest.mock('axios');
   beforeEach(() => {
-    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
-    process.env.COGNITO_REGION = 'cognito_region';
-    process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
-    process.env.AZURE_TENANT_ID = 'azure_tenant_id';
-    process.env.AZURE_CLIENT_ID = 'azure_client_id';
-
-    config = loadConfig();
-    azure = new Azure(config.azure.tenantId, config.azure.clientId, logger);
+    azure = new Azure('tenant_id', 'client_id', logger);
   });
 
   test('getIssuer() should return url with tenant id', () => {
-    expect(azure.getIssuer()).toBe('https://login.microsoftonline.com/azure_tenant_id/v2.0');
+    expect(azure.getIssuer()).toBe('https://login.microsoftonline.com/tenant_id/v2.0');
   });
 
   test('verify() should return true for correct jwt', async () => {
     const payload: JwtPayload = {
       iss: azure.getIssuer(),
-      client_id: config.cognito.clientId,
-      aud: config.azure.clientId,
+      aud: 'client_id',
     };
     const token = jwt.sign(payload, privateKey, { expiresIn: '1h', keyid: '1234example=', algorithm: 'RS256' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
@@ -94,8 +84,7 @@ describe('Test Azure', () => {
   test('verify() should return false for expired jtw', async () => {
     const payload: JwtPayload = {
       iss: azure.getIssuer(),
-      client_id: config.cognito.clientId,
-      aud: config.azure.clientId,
+      aud: 'client_id',
     };
     const token = jwt.sign(payload, privateKey, { expiresIn: -60, keyid: '1234example=', algorithm: 'RS256' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
@@ -111,8 +100,7 @@ describe('Test Azure', () => {
   test('verify() should return false for invalid client_id', async () => {
     const payload: JwtPayload = {
       iss: azure.getIssuer(),
-      client_id: config.cognito.clientId,
-      aud: 'config.azure.clientId',
+      aud: 'wrong_client_id',
     };
     const token = jwt.sign(payload, privateKey, { expiresIn: '1h', keyid: '1234example=', algorithm: 'RS256' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
@@ -121,15 +109,14 @@ describe('Test Azure', () => {
     expect(await azure.verify(token, decodedToken)).toBe(false);
     expect(console.info).toHaveBeenCalledWith(
       logger.logFormat,
-      `${loggerPrefix} jwt audience invalid. expected: azure_client_id`,
+      `${loggerPrefix} jwt audience invalid. expected: client_id`,
     );
   });
 
   test('verify() should return false for invalid key', async () => {
     const payload: JwtPayload = {
       iss: azure.getIssuer(),
-      client_id: config.cognito.clientId,
-      aud: config.azure.clientId,
+      aud: 'client_id',
     };
     const token = jwt.sign(payload, privateKey, { expiresIn: '1h', keyid: 'keyid', algorithm: 'RS256' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
@@ -138,7 +125,7 @@ describe('Test Azure', () => {
     expect(await azure.verify(token, decodedToken)).toBe(false);
     expect(console.info).toHaveBeenCalledWith(
       logger.logFormat,
-      `${loggerPrefix} no public key with ID 'keyid' under tenant azure_tenant_id`,
+      `${loggerPrefix} no public key with ID 'keyid' under tenant tenant_id`,
     );
   });
 });
