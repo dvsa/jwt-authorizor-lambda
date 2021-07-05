@@ -1,22 +1,26 @@
 import * as jwt from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
+import { mocked } from 'ts-jest/utils';
 import { Cognito } from '../../src/services/cognito';
-import { Jwt, JwtPayload } from '../../src/types/types';
+import { Jwt } from '../../src/types/types';
 import { Logger } from '../../src/util/logger';
 
-console.info = jest.fn();
-
-let cognito: Cognito;
-
-const logger: Logger = new Logger('');
-const loggerPrefix = 'Failed to verify jwt::';
+jest.mock('../../src/util/logger', () => ({
+  Logger: jest.fn().mockImplementation(() => ({
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+  })),
+}));
 
 describe('Test Cognito', () => {
   const jwks = createJWKSMock('https://cognito-idp.region.amazonaws.com/pool_id');
+  const MockedLogger = mocked(Logger, true);
 
   beforeEach(() => {
     jwks.start();
-    cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    MockedLogger.mockClear();
   });
 
   afterEach(async () => {
@@ -24,64 +28,71 @@ describe('Test Cognito', () => {
   });
 
   test('getIssuer() should return url with pool id and region', () => {
+    // Setup sut
+    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
+
+    // Define expectations
     expect(cognito.getIssuer()).toBe('https://cognito-idp.region.amazonaws.com/pool_id');
   });
 
   test('verify() should return true for correct jwt', async () => {
-    const token = jwks.token({
-      iss: cognito.getIssuer(),
-      token_use: 'access',
-      client_id: 'client_id',
-    });
+    // Setup sut
+    const logger = new Logger('');
+    const loggerSpy = jest.spyOn(logger, 'info');
+    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
 
+    // Setup token
+    const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
+    // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(true);
   });
 
   test('verify() should return false for expired jtw', async () => {
+    // Setup sut
+    const logger = new Logger('');
+    const loggerSpy = jest.spyOn(logger, 'info');
+    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+
+    // Setup token
     const token = jwks.token({
-      iss: cognito.getIssuer(),
-      token_use: 'access',
-      client_id: 'client_id',
-      exp: 60
+      iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id', exp: 60,
     });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
+    // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
-    expect(console.info).toHaveBeenLastCalledWith(
-      logger.logFormat,
-      `${loggerPrefix} jwt expired`,
-    );
+    expect(loggerSpy).toHaveBeenCalledWith('Failed to verify jwt:: jwt expired');
   });
 
   test('verify() should return false for invalid client_id', async () => {
-    const token = jwks.token({
-      iss: cognito.getIssuer(),
-      token_use: 'access',
-      client_id: 'incorrect',
-    });
+    // Setup sut
+    const logger = new Logger('');
+    const loggerSpy = jest.spyOn(logger, 'info');
+    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+
+    // Setup token
+    const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'incorrect' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
+    // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
-    expect(console.info).toHaveBeenLastCalledWith(
-      logger.logFormat,
-      `${loggerPrefix} contains invalid 'client_id'`,
-    );
+    expect(loggerSpy).toHaveBeenCalledWith("Failed to verify jwt:: contains invalid 'client_id'");
   });
 
   test('verify() should return false for invalid token_use', async () => {
-    const token = jwks.token({
-      iss: cognito.getIssuer(),
-      token_use: 'incorrect',
-      client_id: 'client_id',
-    });
+    // Setup sut
+    const logger = new Logger('');
+    const loggerSpy = jest.spyOn(logger, 'info');
+    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+
+    // Setup token
+    const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'incorrect', client_id: 'client_id' });
     const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
+    // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
-    expect(console.info).toHaveBeenLastCalledWith(
-      logger.logFormat,
-      `${loggerPrefix} contains invalid 'token_use'`,
-    );
+    expect(loggerSpy).toHaveBeenCalledWith("Failed to verify jwt:: contains invalid 'token_use'");
   });
 });
