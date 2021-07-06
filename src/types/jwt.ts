@@ -5,30 +5,10 @@ export interface JwtHeader {
 }
 
 export interface JwtPayload {
-  aio?: string
   aud?: string
-  auth_time?: number
-  azp?: string
-  azpacr?: string
-  client_id?: string
-  event_id?: string
   exp?: number
-  iat?: number
   iss?: string
-  jti?: string
-  name?: string
-  nbf?: number
-  oid?: string
-  preferred_username?: string
-  rh?: string
-  scope?: string
-  scp?: string
-  sub?: string
-  tid?: string
-  token_use?: string
-  username?: string
-  uti?: string
-  ver?: string
+  [index: string]: string | number;
 }
 
 export interface Jwt {

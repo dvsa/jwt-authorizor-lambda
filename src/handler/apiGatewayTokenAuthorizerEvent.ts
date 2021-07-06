@@ -1,6 +1,4 @@
-import type {
-  APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context,
-} from 'aws-lambda';
+import type { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
 import { Action } from 'iam-policy-generator';
 import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
 import { loadConfig } from '../util/configuration';
