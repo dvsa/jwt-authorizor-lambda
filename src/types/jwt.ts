@@ -6,8 +6,8 @@ export interface JwtHeader {
 
 export interface JwtPayload {
   aud?: string
-  exp?: number
-  iss?: string
+  exp: number
+  iss: string
   [index: string]: string | number;
 }
 

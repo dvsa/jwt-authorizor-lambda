@@ -6,27 +6,18 @@ describe('Test configuration', () => {
   });
 
   test('loadConfig() should throw error when cognito region env var missing', () => {
-    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
     expect(() => loadConfig()).toThrow(/COGNITO_REGION/);
   });
 
   test('loadConfig() should throw error when cognito client id env var missing', () => {
-    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
-    process.env.COGNITO_REGION = 'cognito_region';
     expect(() => loadConfig()).toThrow(/COGNITO_CLIENT_ID/);
   });
 
   test('loadConfig() should throw error when azure tenant id env var missing', () => {
-    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
-    process.env.COGNITO_REGION = 'cognito_region';
-    process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
     expect(() => loadConfig()).toThrow(/AZURE_TENANT_ID/);
   });
 
   test('loadConfig() should throw error when azure client id env var missing', () => {
-    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
-    process.env.COGNITO_REGION = 'cognito_region';
-    process.env.AZURE_TENANT_ID = 'azure_tenant_id';
     expect(() => loadConfig()).toThrow(/AZURE_CLIENT_ID/);
   });
 
