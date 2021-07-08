@@ -6,7 +6,7 @@ export interface Configuration {
 export interface CognitoConfig {
   poolId: string,
   region: string,
-  clientId: string
+  clientIds: string[]
 }
 
 export interface AzureConfig {

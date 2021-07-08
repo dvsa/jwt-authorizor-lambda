@@ -7,10 +7,9 @@ The following environment variables need to be set for the lambda to function.
 
 - `COGNITO_POOL_ID `
 - `COGNITO_REGION`
-- `COGNITO_CLIENT_ID`
 - `AZURE_TENANT_ID`
 - `AZURE_CLIENT_ID`
-
+- `COGNITO_CLIENT_ID_[0-9]*`
 
 ## Development
 

@@ -8,14 +8,14 @@ export class Cognito {
 
   poolId: string;
 
-  clientId: string;
+  clientIds: string[];
 
   logger: Logger;
 
-  constructor(region: string, poolId: string, clientId: string, logger: Logger) {
+  constructor(region: string, poolId: string, clientIds: string[], logger: Logger) {
     this.region = region;
     this.poolId = poolId;
-    this.clientId = clientId;
+    this.clientIds = clientIds;
     this.logger = logger;
   }
 
@@ -28,7 +28,7 @@ export class Cognito {
       return false;
     }
 
-    if (decodedToken.payload.client_id !== this.clientId) {
+    if (!this.clientIds.includes(<string>decodedToken.payload.client_id)) {
       this.logger.info("Failed to verify jwt:: contains invalid 'client_id'");
       return false;
     }

@@ -7,12 +7,12 @@ Resources:
     Properties:
       CodeUri: ./src/handler
       Handler: apiGatewayTokenAuthorizerEvent.handler
-      Runtime: nodejs14.x
+      Runtime: nodejs12.x
       Environment:
         Variables:
           COGNITO_POOL_ID: ''
           COGNITO_REGION: ''
-          COGNITO_CLIENT_ID: ''
+          COGNITO_CLIENT_ID_1: ''
           AZURE_TENANT_ID: ''
           AZURE_CLIENT_ID: ''
 

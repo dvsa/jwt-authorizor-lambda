@@ -24,7 +24,7 @@ describe('Test tokenVerifier', () => {
 
   test('decode() throws error when fails to decode jwt', () => {
     // Setup sut
-    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const azure = new Azure('tenant_id', 'client_id', new Logger(''));
     const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
 
@@ -35,7 +35,7 @@ describe('Test tokenVerifier', () => {
     const jwks = createJWKSMock('https://cognito-idp.region.amazonaws.com/pool_id');
     jwks.start();
 
-    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
     const azure = new Azure('tenant_id', 'client_id', new Logger(''));
@@ -56,7 +56,7 @@ describe('Test tokenVerifier', () => {
     const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/keys');
     jwks.start();
 
-    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
     const azure = new Azure('tenant_id', 'client_id', new Logger(''));
@@ -76,7 +76,7 @@ describe('Test tokenVerifier', () => {
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
 
-    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
     const azure = new Azure('tenant_id', 'client_id', logger);

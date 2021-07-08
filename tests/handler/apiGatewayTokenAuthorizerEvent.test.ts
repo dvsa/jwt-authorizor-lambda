@@ -23,7 +23,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
   beforeAll(() => {
     process.env.COGNITO_POOL_ID = 'pool_id';
     process.env.COGNITO_REGION = 'region';
-    process.env.COGNITO_CLIENT_ID = 'client_id';
+    process.env.COGNITO_CLIENT_ID_1 = 'client_id';
     process.env.AZURE_TENANT_ID = 'tenant_id';
     process.env.AZURE_CLIENT_ID = 'client_id';
   });

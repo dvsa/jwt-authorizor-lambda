@@ -19,7 +19,7 @@ Promise<APIGatewayAuthorizerResult> => {
   const config = loadConfig();
   const logger = new Logger(context.awsRequestId);
   const verifier = new TokenVerifier(
-    new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientId, logger),
+    new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientIds, logger),
     new Azure(config.azure.tenantId, config.azure.clientId, logger),
     logger,
   );

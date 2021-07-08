@@ -29,7 +29,7 @@ describe('Test Cognito', () => {
 
   test('getIssuer() should return url with pool id and region', () => {
     // Setup sut
-    const cognito = new Cognito('region', 'pool_id', 'client_id', new Logger(''));
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
 
     // Define expectations
     expect(cognito.getIssuer()).toBe('https://cognito-idp.region.amazonaws.com/pool_id');
@@ -38,7 +38,7 @@ describe('Test Cognito', () => {
   test('verify() should return true for correct jwt', async () => {
     // Setup sut
     const logger = new Logger('');
-    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
@@ -52,7 +52,7 @@ describe('Test Cognito', () => {
     // Setup sut
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
-    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
 
     // Setup token
     const token = jwks.token({
@@ -69,7 +69,7 @@ describe('Test Cognito', () => {
     // Setup sut
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
-    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'incorrect' });
@@ -84,7 +84,7 @@ describe('Test Cognito', () => {
     // Setup sut
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
-    const cognito = new Cognito('region', 'pool_id', 'client_id', logger);
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'incorrect', client_id: 'client_id' });
