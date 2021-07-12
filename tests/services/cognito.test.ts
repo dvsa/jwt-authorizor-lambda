@@ -1,9 +1,8 @@
-import * as jwt from 'jsonwebtoken';
+import { decode, Jwt } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
 import { mocked } from 'ts-jest/utils';
 import { Cognito } from '../../src/services/cognito';
 import { Logger } from '../../src/util/logger';
-import { Jwt } from '../../src/types/jwt';
 
 jest.mock('../../src/util/logger', () => ({
   Logger: jest.fn().mockImplementation(() => ({
@@ -42,7 +41,7 @@ describe('Test Cognito', () => {
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(true);
@@ -58,7 +57,7 @@ describe('Test Cognito', () => {
     const token = jwks.token({
       iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id', exp: 60,
     });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
@@ -73,7 +72,7 @@ describe('Test Cognito', () => {
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'incorrect' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
@@ -88,7 +87,7 @@ describe('Test Cognito', () => {
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'incorrect', client_id: 'client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);

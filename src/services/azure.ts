@@ -1,7 +1,6 @@
-import * as jwt from 'jsonwebtoken';
+import { verify, Jwt } from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
 import { Logger } from '../util/logger';
-import { Jwt } from '../types/jwt';
 
 export class Azure {
   tenantId: string;
@@ -21,7 +20,7 @@ export class Azure {
   public async verify(rawToken: string, decodedToken: Jwt): Promise<boolean> {
     try {
       const key: string = await this.getPublicKey(decodedToken.header.kid);
-      jwt.verify(rawToken, key, { audience: this.clientId });
+      verify(rawToken, key, { audience: this.clientId });
     } catch (err) {
       const { message } = err as Error;
       this.logger.info(`Failed to verify jwt:: ${message}`);

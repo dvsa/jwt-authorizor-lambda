@@ -1,7 +1,6 @@
-import * as jwt from 'jsonwebtoken';
+import { verify, Jwt } from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
 import { Logger } from '../util/logger';
-import { Jwt } from '../types/jwt';
 
 export class Cognito {
   region: string;
@@ -19,22 +18,28 @@ export class Cognito {
     this.logger = logger;
   }
 
-  public async verify(rawToken: string, decodedToken: Jwt): Promise<boolean> {
+  public async verify(rawToken: string, {
+    header: { kid },
+    payload: {
+      client_id,
+      token_use,
+    },
+  }: Jwt): Promise<boolean> {
     try {
-      const key: string = await this.getPublicKey(decodedToken.header.kid);
-      jwt.verify(rawToken, key);
+      const key: string = await this.getPublicKey(kid);
+      verify(rawToken, key);
     } catch (err) {
       const { message } = err as Error;
       this.logger.info(`Failed to verify jwt:: ${message}`);
       return false;
     }
 
-    if (!this.clientIds.includes(<string>decodedToken.payload.client_id)) {
+    if (!this.clientIds.includes(<string>client_id)) {
       this.logger.info("Failed to verify jwt:: contains invalid 'client_id'");
       return false;
     }
 
-    if (decodedToken.payload.token_use !== 'access') {
+    if (token_use !== 'access') {
       this.logger.info("Failed to verify jwt:: contains invalid 'token_use'");
       return false;
     }

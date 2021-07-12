@@ -1,9 +1,8 @@
-import * as jwt from 'jsonwebtoken';
+import { decode } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
 import { mocked } from 'ts-jest/utils';
 import { Logger } from '../../src/util/logger';
 import { Azure } from '../../src/services/azure';
-import { Jwt } from '../../src/types/jwt';
 
 jest.mock('../../src/util/logger', () => ({
   Logger: jest.fn().mockImplementation(() => ({
@@ -41,7 +40,7 @@ describe('Test Azure', () => {
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(true);
@@ -55,7 +54,7 @@ describe('Test Azure', () => {
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id', exp: 60 });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);
@@ -70,7 +69,7 @@ describe('Test Azure', () => {
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'wrong_client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
+    const decodedToken = decode(token, { complete: true });
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);

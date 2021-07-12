@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
 import { mocked } from 'ts-jest/utils';
 import { TokenVerifier } from '../../src/services/tokenVerifier';
@@ -83,7 +83,7 @@ describe('Test tokenVerifier', () => {
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const tokenVerifier = new TokenVerifier(cognito, azure, logger);
-    const res = await tokenVerifier.verify(jwt.sign({ iss: 'incorrect' }, 'secret'));
+    const res = await tokenVerifier.verify(sign({ iss: 'incorrect' }, 'secret'));
 
     expect(azureSpy).not.toHaveBeenCalled();
     expect(cognitoSpy).not.toHaveBeenCalled();
