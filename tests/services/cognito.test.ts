@@ -42,7 +42,7 @@ describe('Test Cognito', () => {
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(true);
@@ -58,7 +58,7 @@ describe('Test Cognito', () => {
     const token = jwks.token({
       iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id', exp: 60,
     });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
@@ -73,7 +73,7 @@ describe('Test Cognito', () => {
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'incorrect' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);
@@ -88,7 +88,7 @@ describe('Test Cognito', () => {
 
     // Setup token
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'incorrect', client_id: 'client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await cognito.verify(token, decodedToken)).toBe(false);

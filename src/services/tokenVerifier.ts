@@ -18,7 +18,7 @@ export class TokenVerifier {
   }
 
   public decode(token: string): Jwt {
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
     if (!decodedToken) {
       throw new Error('Failed to decode provided JWT');
     }
@@ -37,7 +37,8 @@ export class TokenVerifier {
           throw new Error(`Token issuer '${decodedToken.payload.iss}' not accepted`);
       }
     } catch (err) {
-      this.logger.info(err.message);
+      const { message } = err as Error;
+      this.logger.info(message);
       return false;
     }
   }

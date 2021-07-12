@@ -23,7 +23,8 @@ export class Azure {
       const key: string = await this.getPublicKey(decodedToken.header.kid);
       jwt.verify(rawToken, key, { audience: this.clientId });
     } catch (err) {
-      this.logger.info(`Failed to verify jwt:: ${err.message}`);
+      const { message } = err as Error;
+      this.logger.info(`Failed to verify jwt:: ${message}`);
       return false;
     }
     return true;

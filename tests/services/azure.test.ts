@@ -41,7 +41,7 @@ describe('Test Azure', () => {
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(true);
@@ -55,7 +55,7 @@ describe('Test Azure', () => {
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id', exp: 60 });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);
@@ -70,7 +70,7 @@ describe('Test Azure', () => {
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'wrong_client_id' });
-    const decodedToken: Jwt = jwt.decode(token, { complete: true });
+    const decodedToken: Jwt = jwt.decode(token, { complete: true }) as Jwt;
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);
