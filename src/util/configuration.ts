@@ -20,7 +20,7 @@ export const loadConfig = (): Configuration => {
   const cognitoClientIds: string[] = [];
 
   Object.keys(process.env).forEach((key) => {
-    if (key.match(/COGNITO_CLIENT_ID_[0-9]*/g)) {
+    if (key.match(/COGNITO_CLIENT_ID(_[0-9]+)?/g)) {
       cognitoClientIds.push(process.env[`${key}`]);
     }
   });
