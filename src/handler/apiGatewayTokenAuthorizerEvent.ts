@@ -24,27 +24,33 @@ Promise<APIGatewayAuthorizerResult> => {
     logger,
   );
 
+  const arnParts = event.methodArn.split(':');
+  const apiGatewayArn = arnParts[5].split('/');
+
+  // Create wildcard resource
+  const resourceArn = `${arnParts[0]}:${arnParts[1]}:${arnParts[2]}:${arnParts[3]}:${arnParts[4]}:${apiGatewayArn[0]}/*/*`;
+
   if (!event.authorizationToken.trim()) {
     logger.error('no caller-supplied-token (no authorization header on original request)');
-    return unauthorisedPolicy(event.methodArn);
+    return unauthorisedPolicy(resourceArn);
   }
 
   const [bearerPrefix, token] = event.authorizationToken.split(' ');
   if (bearerPrefix !== 'Bearer') {
     logger.error("caller-supplied-token must start with 'Bearer ' (case-sensitive)");
-    return unauthorisedPolicy(event.methodArn);
+    return unauthorisedPolicy(resourceArn);
   }
 
   if (!token || !token.trim()) {
     logger.error("'Bearer ' prefix present, but token is blank or missing");
-    return unauthorisedPolicy(event.methodArn);
+    return unauthorisedPolicy(resourceArn);
   }
 
   if (await verifier.verify(token)) {
-    return authorisedPolicy(event.methodArn);
+    return authorisedPolicy(resourceArn);
   }
 
-  return unauthorisedPolicy(event.methodArn);
+  return unauthorisedPolicy(resourceArn);
 };
 
 const authorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
