@@ -31,7 +31,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
   test('Returns unauthorisedPolicy when authorizationToken not supplied', async () => {
     const eventMock: APIGatewayTokenAuthorizerEvent = <APIGatewayTokenAuthorizerEvent>{
       authorizationToken: '',
-      methodArn: 'GET',
+      methodArn: 'arn:aws:execute-api:eu-west-1:123456789:GET',
     };
     const contextMock: Context = <Context>{ awsRequestId: v4() };
 
@@ -45,7 +45,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const eventMock: APIGatewayTokenAuthorizerEvent = <APIGatewayTokenAuthorizerEvent>{
       authorizationToken: 'eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsb2NhbGhvc3QiLCJhdWQiOiJjbGllbnRfaWQifQ.'
         + '_yCp5phJj2mIJEFi3Yyr-7yiCx4zMqCXoZmYBDv6Pkc',
-      methodArn: 'GET',
+      methodArn: 'arn:aws:execute-api:eu-west-1:123456789:GET',
     };
     const contextMock: Context = <Context>{ awsRequestId: v4() };
 
@@ -59,7 +59,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
   test('Returns unauthorisedPolicy when authorizationToken is missing token', async () => {
     const eventMock: APIGatewayTokenAuthorizerEvent = <APIGatewayTokenAuthorizerEvent>{
       authorizationToken: 'Bearer',
-      methodArn: 'GET',
+      methodArn: 'arn:aws:execute-api:eu-west-1:123456789:GET',
     };
     const contextMock: Context = <Context>{ awsRequestId: v4() };
 
@@ -73,7 +73,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
   test('Returns unauthorisedPolicy when jwt is invalid', async () => {
     const eventMock: APIGatewayTokenAuthorizerEvent = <APIGatewayTokenAuthorizerEvent>{
       authorizationToken: '',
-      methodArn: 'GET',
+      methodArn: 'arn:aws:execute-api:eu-west-1:123456789:GET',
     };
     const contextMock: Context = <Context>{ awsRequestId: v4() };
 
@@ -87,7 +87,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const eventMock: APIGatewayTokenAuthorizerEvent = <APIGatewayTokenAuthorizerEvent>{
       authorizationToken: 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJsb2NhbGhvc3QiLCJhdWQiOiJjbGllbnRfaWQifQ.'
         + '_yCp5phJj2mIJEFi3Yyr-7yiCx4zMqCXoZmYBDv6Pkc',
-      methodArn: 'GET',
+      methodArn: 'arn:aws:execute-api:eu-west-1:123456789:GET',
     };
     const contextMock: Context = <Context>{ awsRequestId: v4() };
 
