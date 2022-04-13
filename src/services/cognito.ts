@@ -1,5 +1,6 @@
 import { verify, Jwt } from 'jsonwebtoken';
 import JwksClient from 'jwks-rsa';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { Logger } from '../util/logger';
 
 export class Cognito {
@@ -52,9 +53,18 @@ export class Cognito {
   }
 
   public async getPublicKey(keyId: string): Promise<string> {
+    let requestAgent: HttpsProxyAgent;
+
+    if (process.env.HTTP_PROXY) {
+      this.logger.info('Found `HTTP_PROXY` in environment variables. Applying proxy setting to `getPublicKey`.');
+      requestAgent = new HttpsProxyAgent(process.env.HTTP_PROXY);
+    }
+
     const jwksClient = JwksClient({
       jwksUri: `${this.getIssuer()}/.well-known/jwks.json`,
+      requestAgent,
     });
+
     const key = await jwksClient.getSigningKey(keyId);
 
     return key.getPublicKey();
