@@ -55,9 +55,9 @@ export class Cognito {
   public async getPublicKey(keyId: string): Promise<string> {
     let requestAgent: HttpsProxyAgent;
 
-    if (process.env.HTTP_PROXY) {
-      this.logger.info('Found `HTTP_PROXY` in environment variables. Applying proxy setting to `getPublicKey`.');
-      requestAgent = new HttpsProxyAgent(process.env.HTTP_PROXY);
+    if (process.env.HTTPS_PROXY) {
+      this.logger.info('Found `HTTPS_PROXY` in environment variables. Applying proxy setting to `getPublicKey`.');
+      requestAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY);
     }
 
     const jwksClient = JwksClient({
