@@ -24,11 +24,11 @@ describe('Cognito service with proxy settings', () => {
     process.env = oldEnvCache; // Restore old environment
   });
 
-  test('getPublicKey() should apply proxy if `HTTP_PROXY` environment variable set', async () => {
+  test('getPublicKey() should apply proxy if `HTTPS_PROXY` environment variable set', async () => {
     const logger = new Logger('');
     const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
 
-    process.env.HTTP_PROXY = 'http://example.com';
+    process.env.HTTPS_PROXY = 'http://example.com';
 
     await cognito.getPublicKey('KEY_ID');
 
@@ -36,7 +36,7 @@ describe('Cognito service with proxy settings', () => {
     expect(JwksClient).toBeCalledWith(expect.objectContaining({ requestAgent: expect.any(HttpsProxyAgent) as unknown }));
   });
 
-  test('getPublicKey() should apply not proxy if `HTTP_PROXY` environment variable set', async () => {
+  test('getPublicKey() should apply not proxy if `HTTPS_PROXY` environment variable set', async () => {
     const logger = new Logger('');
     const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
 
