@@ -6,8 +6,9 @@ import { Logger } from '../../src/util/logger';
 jest.mock('../../src/util/logger');
 jest.mock('jwks-rsa', () => ({
   __esModule: true,
-  default: jest.fn().mockReturnThis(),
-  getSigningKey: jest.fn().mockReturnValue({ getPublicKey: () => jest.fn() }),
+  default: jest.fn().mockReturnValue(({
+    getSigningKey: jest.fn().mockReturnValue({ getPublicKey: () => jest.fn() }),
+  })),
 }));
 
 describe('Cognito service with proxy settings', () => {
@@ -33,7 +34,7 @@ describe('Cognito service with proxy settings', () => {
     await cognito.getPublicKey('KEY_ID');
 
     // Define expectations
-    expect(JwksClient).toBeCalledWith(expect.objectContaining({ requestAgent: expect.any(HttpsProxyAgent) as unknown }));
+    expect(JwksClient).toHaveBeenCalledWith(expect.objectContaining({ requestAgent: expect.any(HttpsProxyAgent) as unknown }));
   });
 
   test('getPublicKey() should apply not proxy if `HTTP_PROXY` environment variable set', async () => {
@@ -43,6 +44,6 @@ describe('Cognito service with proxy settings', () => {
     await cognito.getPublicKey('KEY_ID');
 
     // Define expectations
-    expect(JwksClient).toBeCalledWith(expect.objectContaining({ requestAgent: undefined }));
+    expect(JwksClient).toHaveBeenCalledWith(expect.objectContaining({ requestAgent: undefined }));
   });
 });

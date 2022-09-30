@@ -27,6 +27,11 @@ export class TokenVerifier {
   public async verify(rawToken: string):Promise<boolean> {
     try {
       const decodedToken = this.decode(rawToken);
+
+      if (typeof decodedToken.payload === 'string') {
+        throw new Error('Unable to decode payload into object, instead received string.');
+      }
+
       switch (decodedToken.payload.iss) {
         case this.cognito.getIssuer():
           return await this.cognito.verify(rawToken, decodedToken);

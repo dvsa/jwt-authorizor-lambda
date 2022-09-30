@@ -46,6 +46,10 @@ Promise<APIGatewayAuthorizerResult> => {
     return unauthorisedPolicy(resourceArn);
   }
 
+  if (process.env.IS_MOCK === 'true') {
+    return authorisedPolicy(resourceArn);
+  }
+
   if (await verifier.verify(token)) {
     return authorisedPolicy(resourceArn);
   }

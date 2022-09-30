@@ -11,6 +11,8 @@ The following environment variables need to be set for the lambda to function.
 - `AZURE_CLIENT_ID`
 - `COGNITO_CLIENT_ID(_[0-9]+)?` - Allows either single client id or multiple
 
+- `IS_MOCK` - WARNING: Setting this to `true` will always return an authorised policy for any token (the token will not be verified).
+
 ## Development
 
 ### Requirements

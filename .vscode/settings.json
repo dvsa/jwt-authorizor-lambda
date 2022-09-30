@@ -1,6 +1,6 @@
 {    
   "eslint.enable": true,
-  "eslint.options": { "configFile": ".eslintrc" },
+  "eslint.options": { "overrideConfigFile": ".eslintrc" },
   "editor.detectIndentation": false,
   "editor.tabSize": 2,
   "editor.rulers": [120],
