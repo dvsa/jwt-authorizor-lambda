@@ -6,9 +6,10 @@ import { Logger } from '../../src/util/logger';
 jest.mock('../../src/util/logger');
 jest.mock('jwks-rsa', () => ({
   __esModule: true,
-  default: jest.fn().mockReturnThis(),
-  getSigningKey: jest.fn().mockReturnValue({ getPublicKey: () => jest.fn() }),
-}));
+  default: jest.fn().mockReturnValue(({
+    getSigningKey: jest.fn().mockReturnValue({ getPublicKey: () => jest.fn() }),
+  }),
+)}));
 
 describe('Cognito service with proxy settings', () => {
   const oldEnvCache = process.env;
