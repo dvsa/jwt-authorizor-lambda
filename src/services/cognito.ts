@@ -54,7 +54,6 @@ export class Cognito {
     let requestAgent: HttpsProxyAgent;
 
     if (process.env.HTTP_PROXY) {
-      this.logger.info('Found `HTTP_PROXY` in environment variables. Applying proxy setting to `getPublicKey`.');
       requestAgent = new HttpsProxyAgent(process.env.HTTP_PROXY);
     }
 
