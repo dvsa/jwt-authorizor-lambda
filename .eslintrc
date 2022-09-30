@@ -8,5 +8,22 @@
         "alwaysTryTypes": true
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "files": "**/tests/**",
+      "rules": {
+        "jest/no-conditional-expect": "off",
+      }
+    },
+    {
+      // Only turn the original rule off for test files.
+      "files": ["**/tests/**", "**/test/**"],
+      "plugins": ["jest"],
+      "rules": {
+        "@typescript-eslint/unbound-method": "off",
+        "jest/unbound-method": "error"
+      }
+    }
+  ]
 }

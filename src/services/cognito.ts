@@ -19,15 +19,13 @@ export class Cognito {
     this.logger = logger;
   }
 
-  public async verify(rawToken: string, {
-    header: { kid },
-    payload: {
-      client_id,
-      token_use,
-    },
-  }: Jwt): Promise<boolean> {
+  public async verify(rawToken: string, jwt: Jwt): Promise<boolean> {
+    if (typeof jwt.payload === 'string') {
+      throw new Error('Unable to decode payload into object, instead received string.');
+    }
+  
     try {
-      const key: string = await this.getPublicKey(kid);
+      const key: string = await this.getPublicKey(jwt.header.kid);
       verify(rawToken, key);
     } catch (err) {
       const { message } = err as Error;
@@ -35,12 +33,12 @@ export class Cognito {
       return false;
     }
 
-    if (!this.clientIds.includes(<string>client_id)) {
+    if (!this.clientIds.includes(jwt.payload.client_id)) {
       this.logger.info("Failed to verify jwt:: contains invalid 'client_id'");
       return false;
     }
 
-    if (token_use !== 'access') {
+    if (jwt.payload.token_use !== 'access') {
       this.logger.info("Failed to verify jwt:: contains invalid 'token_use'");
       return false;
     }
