@@ -23,7 +23,7 @@ export class Cognito {
     if (typeof jwt.payload === 'string') {
       throw new Error('Unable to decode payload into object, instead received string.');
     }
-  
+
     try {
       const key: string = await this.getPublicKey(jwt.header.kid);
       verify(rawToken, key);
@@ -33,7 +33,7 @@ export class Cognito {
       return false;
     }
 
-    if (!this.clientIds.includes(jwt.payload.client_id)) {
+    if (!this.clientIds.includes(jwt.payload.client_id as string)) {
       this.logger.info("Failed to verify jwt:: contains invalid 'client_id'");
       return false;
     }
