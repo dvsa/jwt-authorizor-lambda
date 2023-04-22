@@ -13,7 +13,7 @@
     {
       "files": "**/tests/**",
       "rules": {
-        "jest/no-conditional-expect": "off",
+        "jest/no-conditional-expect": "off"
       }
     },
     {
