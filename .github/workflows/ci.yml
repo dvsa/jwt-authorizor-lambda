@@ -50,7 +50,7 @@ jobs:
       environment: dvsa-digital
       short-commit: ${{ needs.build-names.outputs.short_sha }}
       artifact: dist.zip
-      bucket_key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
+      bucket-key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
       id-token: write
     secrets:
