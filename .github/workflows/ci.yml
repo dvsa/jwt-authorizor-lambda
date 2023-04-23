@@ -49,7 +49,7 @@ jobs:
     with:
       environment: dev
       short-commit: ${{ needs.build-names.outputs.short_sha }}
-      artifact: dist.zip
+      artifact: jwt-authorizor-lambda-${{ needs.build-names.outputs.pretty_branch_name }}-${{ needs.build-names.outputs.short_sha }}.zip
       bucket-key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
       id-token: write
