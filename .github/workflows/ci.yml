@@ -43,11 +43,11 @@ jobs:
       build_command: build:prod
 
   upload-to-s3:
-    if: ${{ github.ref_name == github.event.repository.default_branch }}
+    if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
     uses: dvsa/.github/.github/workflows/upload-to-s3.yaml@v2.3
     needs: [ lint, test, build, build-names ]
     with:
-      environment: dev
+      environment: dvsa-digital
       short_commit: ${{ needs.build-names.outputs.short_sha }}
       artifact: dist.zip
       bucket_key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
@@ -59,11 +59,11 @@ jobs:
       BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
 
   update-lambda-code:
-    if: ${{ github.ref_name == github.event.repository.default_branch }}
+    if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
     uses: dvsa/.github/.github/workflows/update-lambda-function.yaml@v2.3
     needs: [ build-names, build, upload-to-s3 ]
     with:
-      environment: dev
+      environment: dvsa-digital
       lambda_function_name: ApiGatewayTokenAuthorizerEvent
       bucket_key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
