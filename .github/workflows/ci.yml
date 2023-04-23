@@ -47,7 +47,7 @@ jobs:
     uses: dvsa/.github/.github/workflows/upload-to-s3.yaml@v3.1.0
     needs: [ lint, test, build, build-names ]
     with:
-      environment: dvsa-digital
+      environment: dev
       short-commit: ${{ needs.build-names.outputs.short_sha }}
       artifact: dist.zip
       bucket-key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
@@ -63,7 +63,7 @@ jobs:
     uses: dvsa/.github/.github/workflows/update-lambda-function.yaml@v3.1.0
     needs: [ build-names, build, upload-to-s3 ]
     with:
-      environment: dvsa-digital
+      environment: dev
       lambda_function_name: ApiGatewayTokenAuthorizerEvent
       bucket_key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
