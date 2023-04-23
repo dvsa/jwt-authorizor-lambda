@@ -50,7 +50,7 @@ jobs:
       environment: dev
       short-commit: ${{ needs.build-names.outputs.short_sha }}
       artifact: jwt-authorizor-lambda-${{ needs.build-names.outputs.pretty_branch_name }}-${{ needs.build-names.outputs.short_sha }}.zip
-      bucket-key: /artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
+      bucket-key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
       id-token: write
     secrets:
@@ -66,7 +66,7 @@ jobs:
     with:
       environment: dev
       lambda-function-name: ApiGatewayTokenAuthorizerEvent
-      bucket-key: /artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
+      bucket-key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
       id-token: write
     secrets:
