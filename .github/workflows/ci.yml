@@ -57,6 +57,7 @@ jobs:
       AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      AWS_ROLE_TO_ASSUME_ARN: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
 
   update-lambda-code:
     if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
@@ -72,3 +73,4 @@ jobs:
       AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+      AWS_ROLE_TO_ASSUME_ARN: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
