@@ -1,8 +1,9 @@
+import {describe, expect, test} from '@jest/globals';
 import { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
 import { v4 } from 'uuid';
-import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
 import { handler } from '../../src/handler/apiGatewayTokenAuthorizerEvent';
 import { TokenVerifier } from '../../src/services/tokenVerifier';
+
 
 jest.mock('../../src/util/logger');
 jest.mock('../../src/services/tokenVerifier');
@@ -38,7 +39,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const res: APIGatewayAuthorizerResult = await handler(eventMock, contextMock);
     const statement = res.policyDocument.Statement.pop();
 
-    expect(statement.Effect).toBe(Effect.DENY);
+    expect(statement.Effect).toBe('Deny');
   });
 
   test('Returns unauthorisedPolicy when authorizationToken is missing bearer', async () => {
@@ -52,8 +53,8 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const res: APIGatewayAuthorizerResult = await handler(eventMock, contextMock);
     const statement = res.policyDocument.Statement.pop();
 
-    expect(statement.Effect)
-      .toBe(Effect.DENY);
+    expect(statement)
+      .toBe('Deny');
   });
 
   test('Returns unauthorisedPolicy when authorizationToken is missing token', async () => {
@@ -67,7 +68,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const statement = res.policyDocument.Statement.pop();
 
     expect(statement.Effect)
-      .toBe(Effect.DENY);
+      .toBe('Deny');
   });
 
   test('Returns unauthorisedPolicy when jwt is invalid', async () => {
@@ -81,7 +82,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const statement = res.policyDocument.Statement.pop();
 
     expect(statement.Effect)
-      .toBe(Effect.DENY);
+      .toBe('Deny');
   });
 
   test('Returns authorisedPolicy when jwt is valid', async () => {
@@ -95,7 +96,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const res: APIGatewayAuthorizerResult = await handler(eventMock, contextMock);
     const statement = res.policyDocument.Statement.pop();
 
-    expect(statement.Effect).toBe(Effect.ALLOW);
+    expect(statement.Effect).toBe('Allow');
     expect(TokenVerifier.prototype.verify).toHaveBeenCalled();
   });
 
@@ -112,7 +113,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const res: APIGatewayAuthorizerResult = await handler(eventMock, contextMock);
     const statement = res.policyDocument.Statement.pop();
 
-    expect(statement.Effect).toBe(Effect.ALLOW);
+    expect(statement.Effect).toBe('Allow');
     expect(TokenVerifier.prototype.verify).not.toHaveBeenCalled();
   });
 });

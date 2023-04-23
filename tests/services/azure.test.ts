@@ -1,6 +1,6 @@
 import { decode } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
-import { mocked } from 'ts-jest/utils';
+
 import { Logger } from '../../src/util/logger';
 import { Azure } from '../../src/services/azure';
 
@@ -15,15 +15,13 @@ jest.mock('../../src/util/logger', () => ({
 
 describe('Test Azure', () => {
   const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/keys');
-  const MockedLogger = mocked(Logger, true);
 
   beforeEach(() => {
-    MockedLogger.mockClear();
     jwks.start();
   });
 
-  afterEach(async () => {
-    await jwks.stop();
+  afterEach(() => {
+    jwks.stop();
   });
 
   test('getIssuer() should return url with tenant id', () => {

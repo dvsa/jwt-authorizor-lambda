@@ -1,6 +1,5 @@
 import type { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
-import { Action } from 'iam-policy-generator';
-import { Effect } from 'iam-policy-generator/lib/PolicyFactory';
+import { PolicyStatementFactory, Action } from 'iam-policy-generator';
 import { loadConfig } from '../util/configuration';
 import { Cognito } from '../services/cognito';
 import { Azure } from '../services/azure';
@@ -62,7 +61,7 @@ const authorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
   policyDocument: {
     Version: '2012-10-17',
     Statement: [{
-      Effect: Effect.ALLOW,
+      Effect: 'Allow',
       Action: Action.API_GATEWAY.INVOKE,
       Resource: arn,
     }],
@@ -74,7 +73,7 @@ const unauthorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
   policyDocument: {
     Version: '2012-10-17',
     Statement: [{
-      Effect: Effect.DENY,
+      Effect: 'Deny',
       Action: Action.API_GATEWAY.INVOKE,
       Resource: arn,
     }],
