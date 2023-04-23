@@ -1,4 +1,4 @@
-name: CI
+name: CI for JWT Authorizor
 
 on:
   push:
@@ -64,8 +64,8 @@ jobs:
     needs: [ build-names, build, upload-to-s3 ]
     with:
       environment: dev
-      lambda_function_name: ApiGatewayTokenAuthorizerEvent
-      bucket_key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
+      lambda-function-name: ApiGatewayTokenAuthorizerEvent
+      bucket-key: artefacts/${{ needs.build-names.outputs.pretty_branch_name }}.zip
     permissions:
       id-token: write
     secrets:
