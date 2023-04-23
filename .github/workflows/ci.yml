@@ -40,7 +40,7 @@ jobs:
     with:
       upload-artifact: true
       build-folder: dist
-      build-command: build:prod
+      build-command: npm run build:prod
 
   upload-to-s3:
     if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
