@@ -51,7 +51,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     const res: APIGatewayAuthorizerResult = await handler(eventMock, contextMock);
     const statement = res.policyDocument.Statement.pop();
 
-    expect(statement)
+    expect(statement.Effect)
       .toBe('Deny');
   });
 

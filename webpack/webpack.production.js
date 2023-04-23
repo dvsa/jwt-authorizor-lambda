@@ -7,8 +7,7 @@ const branchName = require('current-git-branch');
 const LAMBDA_NAME = 'ApiGatewayTokenAuthorizerEvent';
 const OUTPUT_FOLDER = './dist'
 const REPO_NAME = 'jwt-authorizor-lambda';
-const BRANCH_NAME = branchName().replace(/\//g,"-");
-
+const BRANCH_NAME = `${branchName()}`.replace(/\//g, '-');
 class BundlePlugin {
   constructor(params) {
     this.archives = params.archives;

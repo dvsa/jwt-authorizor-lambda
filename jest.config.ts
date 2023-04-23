@@ -1,11 +1,13 @@
 import type { Config } from 'jest';
 
 const config: Config = {
+  preset: 'ts-jest',
   transform: {
     '\\.ts$': 'ts-jest',
+    'node_modules/(iam-policy-generator|mock-jwks)': 'ts-jest',
   },
   testEnvironment: 'node',
-  transformIgnorePatterns: ['<rootDir>/node_modules/'],
+  transformIgnorePatterns: ['node_modules\\/(?!(iam-policy-generator|mock-jwks))'],
   coverageDirectory: '<rootDir>/coverage/',
   coverageThreshold: {
     global: {
@@ -15,7 +17,7 @@ const config: Config = {
       statements: 75,
     },
   },
-  reporters: ['default', 'github-actions'],
+  reporters: ['default', ['github-actions', { silent: false }]],
 };
 
 export default config;
