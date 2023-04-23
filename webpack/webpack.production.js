@@ -3,7 +3,9 @@ const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const archiver = require('archiver');
 const branchName = require('current-git-branch');
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
 
+const gitRevisionPlugin = new GitRevisionPlugin()
 const LAMBDA_NAME = 'ApiGatewayTokenAuthorizerEvent';
 const OUTPUT_FOLDER = './dist'
 const REPO_NAME = 'jwt-authorizor-lambda';
@@ -55,10 +57,11 @@ class BundlePlugin {
 
 
 module.exports = env => {
-  let commit = env ? env.commit ? env.commit : 'local' : 'local' ;
+  let commit = env ? env.commit ? env.commit : gitRevisionPlugin.commithash().slice(0,11) : 'local' ;
   return merge(common, {
     mode: 'production',
     plugins: [
+      gitRevisionPlugin,
       new BundlePlugin({
         archives: [
           {
