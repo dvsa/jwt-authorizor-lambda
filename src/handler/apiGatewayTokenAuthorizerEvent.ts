@@ -1,5 +1,5 @@
 import type { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
-import { PolicyStatementFactory, Action } from 'iam-policy-generator';
+import { Action } from 'iam-policy-generator';
 import { loadConfig } from '../util/configuration';
 import { Cognito } from '../services/cognito';
 import { Azure } from '../services/azure';

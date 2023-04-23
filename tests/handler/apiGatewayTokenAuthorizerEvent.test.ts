@@ -1,9 +1,7 @@
-import {describe, expect, test} from '@jest/globals';
 import { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
 import { v4 } from 'uuid';
 import { handler } from '../../src/handler/apiGatewayTokenAuthorizerEvent';
 import { TokenVerifier } from '../../src/services/tokenVerifier';
-
 
 jest.mock('../../src/util/logger');
 jest.mock('../../src/services/tokenVerifier');
