@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint '*/**/*.ts' --quiet --fix",
     "lint:ci": "eslint '*/**/*.ts'",
-    "test": "jest --coverage  --verbose --runInBand ",
+    "test": "jest --coverage  --verbose ",
     "test:ci": "jest --ci ",
     "build:dev": "NODE_ENV=development webpack-cli --config webpack/webpack.development.js",
     "watch:dev": "NODE_ENV=development webpack-cli --config webpack/webpack.development.watch.js",

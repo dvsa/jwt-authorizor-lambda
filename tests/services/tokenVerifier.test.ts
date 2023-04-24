@@ -46,7 +46,7 @@ describe('Test tokenVerifier', () => {
   });
 
   test('verify() to call azure.verify for a cognito JWT', async () => {
-    const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/keys');
+    const jwks = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
     jwks.start();
 
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
