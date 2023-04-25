@@ -17,7 +17,7 @@ The following environment variables need to be set for the lambda to function.
 
 ### Requirements
 
-- node v14.17.3
+- node v18.15.0
 - [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
 

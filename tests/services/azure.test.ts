@@ -1,6 +1,6 @@
 import { decode } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
-import { mocked } from 'ts-jest/utils';
+
 import { Logger } from '../../src/util/logger';
 import { Azure } from '../../src/services/azure';
 
@@ -14,16 +14,14 @@ jest.mock('../../src/util/logger', () => ({
 }));
 
 describe('Test Azure', () => {
-  const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/keys');
-  const MockedLogger = mocked(Logger, true);
+  const jwks = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
 
   beforeEach(() => {
-    MockedLogger.mockClear();
     jwks.start();
   });
 
-  afterEach(async () => {
-    await jwks.stop();
+  afterEach(() => {
+    jwks.stop();
   });
 
   test('getIssuer() should return url with tenant id', () => {
@@ -31,7 +29,7 @@ describe('Test Azure', () => {
     const azure = new Azure('tenant_id', 'client_id', new Logger(''));
 
     // Expectations
-    expect(azure.getIssuer()).toBe('https://login.microsoftonline.com/tenant_id/v2.0');
+    expect(azure.getIssuer()).toBe('https://sts.windows.net/tenant_id/');
   });
 
   test('verify() should return true for correct jwt', async () => {

@@ -9,7 +9,7 @@ export class Azure {
 
   logger: Logger;
 
-  baseUrl = 'https://login.microsoftonline.com';
+  baseUrl = 'https://sts.windows.net';
 
   constructor(tenantId: string, clientId: string, logger: Logger) {
     this.tenantId = tenantId;
@@ -30,7 +30,7 @@ export class Azure {
   }
 
   public getIssuer(): string {
-    return `${this.baseUrl}/${this.tenantId}/v2.0`;
+    return `${this.baseUrl}/${this.tenantId}/`;
   }
 
   protected async getPublicKey(keyId: string): Promise<string> {

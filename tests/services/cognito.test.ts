@@ -1,6 +1,5 @@
-import { decode, Jwt } from 'jsonwebtoken';
+import { decode } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
-import { mocked } from 'ts-jest/utils';
 import { Cognito } from '../../src/services/cognito';
 import { Logger } from '../../src/util/logger';
 
@@ -15,15 +14,13 @@ jest.mock('../../src/util/logger', () => ({
 
 describe('Test Cognito', () => {
   const jwks = createJWKSMock('https://cognito-idp.region.amazonaws.com/pool_id');
-  const MockedLogger = mocked(Logger, true);
-
   beforeEach(() => {
     jwks.start();
-    MockedLogger.mockClear();
+    jest.clearAllMocks();
   });
 
-  afterEach(async () => {
-    await jwks.stop();
+  afterEach(() => {
+    jwks.stop();
   });
 
   test('getIssuer() should return url with pool id and region', () => {

@@ -1,6 +1,5 @@
 import { sign } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
-import { mocked } from 'ts-jest/utils';
 import { TokenVerifier } from '../../src/services/tokenVerifier';
 import { Cognito } from '../../src/services/cognito';
 import { Azure } from '../../src/services/azure';
@@ -16,12 +15,6 @@ jest.mock('../../src/util/logger', () => ({
 }));
 
 describe('Test tokenVerifier', () => {
-  const MockedLogger = mocked(Logger, true);
-
-  beforeEach(() => {
-    MockedLogger.mockClear();
-  });
-
   test('decode() throws error when fails to decode jwt', () => {
     // Setup sut
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
@@ -45,7 +38,7 @@ describe('Test tokenVerifier', () => {
 
     const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
     const res = await tokenVerifier.verify(token);
-    await jwks.stop();
+    jwks.stop();
 
     expect(cognitoSpy).toHaveBeenCalled();
     expect(azureSpy).not.toHaveBeenCalled();
@@ -53,7 +46,7 @@ describe('Test tokenVerifier', () => {
   });
 
   test('verify() to call azure.verify for a cognito JWT', async () => {
-    const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/keys');
+    const jwks = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
     jwks.start();
 
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
@@ -70,6 +63,7 @@ describe('Test tokenVerifier', () => {
     expect(azureSpy).toHaveBeenCalled();
     expect(cognitoSpy).not.toHaveBeenCalled();
     expect(res).toBe(true);
+    jwks.stop();
   });
 
   test('verify() returns false when issuer is not accepted', async () => {
