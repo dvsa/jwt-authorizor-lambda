@@ -17,6 +17,10 @@ export const loadConfig = (): Configuration => {
     throw new Error(`Required env vars are missing: ${JSON.stringify(errors)}`);
   }
 
+  if (process.env.ENABLE_CONFIGURATION_FILE === 'true' && !process.env.CONFIGURATION_FILE_PATH) {
+    throw new Error('CONFIGURATION_FILE_PATH must be set when ENABLE_CONFIGURATION_FILE is true');
+  }
+
   const cognitoClientIds: string[] = [];
 
   Object.keys(process.env).forEach((key) => {
@@ -40,6 +44,10 @@ export const loadConfig = (): Configuration => {
       clientIds: cognitoClientIds,
       poolId: process.env.COGNITO_POOL_ID,
       region: process.env.COGNITO_REGION,
+    },
+    configurationFile: {
+      enabled: process.env.ENABLE_CONFIGURATION_FILE === 'true',
+      filePath: process.env.CONFIGURATION_FILE_PATH,
     },
   };
 };

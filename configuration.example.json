@@ -1,0 +1,29 @@
+[
+  {
+    "role": "Public",
+    "authorisedEndpoints": [
+      {
+        "httpVerb": "GET",
+        "url": "/api/endpoint/one/*"
+      }, {
+        "httpVerb": "POST",
+        "url": "/api/endpoint/two"
+      }
+    ]
+  },
+  {
+    "role": "Internal",
+    "authorisedEndpoints": [
+      {
+        "httpVerb": "GET",
+        "url": "/internal/api/endpoint/three"
+      }, {
+        "httpVerb": "GET",
+        "url": "/internal/api/endpoint/four/*"
+      }, {
+        "httpVerb": "POST",
+        "url": "/internal/api/endpoint/five"
+      }
+    ]
+  }
+]

@@ -109,3 +109,5 @@ dist
 env.json
 
 invoke/
+
+configuration.json
