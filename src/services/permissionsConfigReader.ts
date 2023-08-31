@@ -24,7 +24,7 @@ export class PermissionsConfigReader {
       const isValidJson = this.validator.validateJsonAgainstSchema(PERMISSIONS_FILE_SCHEMA, permissionsConfig);
 
       if (!isValidJson) {
-        throw Error('Permissions configuration file does not match valid schema');
+        throw new Error('Permissions configuration file does not match valid schema');
       }
 
       return permissionsConfig as PermissionsConfig;

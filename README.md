@@ -25,7 +25,7 @@ Example policy statements returned for this example are:
 }
 ```
 
-This functionality is toggled on and off using the `ENABLE_CONFIGURATION_FILE` environment variable.
+This functionality is toggled on and off using the `ENABLE_CONFIGURATION_FILE` environment variable. If this is disabled, permissions will be granted/denied to every endpoint hosted by the API.
 
 ### Error Scenarios
 
