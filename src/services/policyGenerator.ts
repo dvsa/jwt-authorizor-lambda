@@ -1,5 +1,4 @@
 import { APIGatewayAuthorizerResult, Statement } from 'aws-lambda';
-import { Action } from 'iam-policy-generator';
 import { AuthorisedEndpoint, PermissionsConfig } from '../types/configuration';
 
 export class PolicyGenerator {
@@ -13,6 +12,8 @@ export class PolicyGenerator {
 
   private readonly DENY = 'Deny';
 
+  private readonly INVOKE_ACTION = 'execute-api:Invoke';
+
   public generateAuthorisedPolicy(eventArn: string): APIGatewayAuthorizerResult {
     const resourceArn = this.generateWildcardArn(eventArn);
 
@@ -22,7 +23,7 @@ export class PolicyGenerator {
         Version: this.VERSION,
         Statement: [{
           Effect: this.ALLOW,
-          Action: Action.API_GATEWAY.INVOKE,
+          Action: this.INVOKE_ACTION,
           Resource: resourceArn,
         }],
       },
@@ -38,7 +39,7 @@ export class PolicyGenerator {
         Version: this.VERSION,
         Statement: [{
           Effect: this.DENY,
-          Action: Action.API_GATEWAY.INVOKE,
+          Action: this.INVOKE_ACTION,
           Resource: resourceArn,
         }],
       },
@@ -46,12 +47,7 @@ export class PolicyGenerator {
   }
 
   public generateConfigurationFilePolicy(configFileContents: PermissionsConfig, roles: string[], eventMethodArn: string): APIGatewayAuthorizerResult {
-    let statements: Statement[] = [];
-
-    roles.forEach((role) => {
-      const items = this.generateStatementsForRole(role, configFileContents, eventMethodArn);
-      statements = statements.concat(items);
-    });
+    const statements = roles.flatMap((role) => this.generateStatementsForRole(role, configFileContents, eventMethodArn));
 
     if (statements.length === 0) {
       return undefined;
@@ -77,7 +73,7 @@ export class PolicyGenerator {
 
     return {
       Effect: this.ALLOW,
-      Action: Action.API_GATEWAY.INVOKE,
+      Action: this.INVOKE_ACTION,
       Resource: arn,
     };
   }
@@ -97,9 +93,9 @@ export class PolicyGenerator {
   }
 
   private generateArnPrefix(eventMethodArn: string): string {
-    const arnParts = eventMethodArn.split(':');
-    const apiGatewayArn = arnParts[5].split('/');
+    const [arn, partition, service, region, accountId, resource] = eventMethodArn.split(':');
+    const [apiGatewayId] = resource.split('/');
 
-    return `${arnParts[0]}:${arnParts[1]}:${arnParts[2]}:${arnParts[3]}:${arnParts[4]}:${apiGatewayArn[0]}`;
+    return `${arn}:${partition}:${service}:${region}:${accountId}:${apiGatewayId}`;
   }
 }

@@ -1,5 +1,4 @@
 import type { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
-import { JwtPayload } from 'jsonwebtoken';
 import { loadConfig } from '../util/configuration';
 import { Cognito } from '../services/cognito';
 import { Azure } from '../services/azure';
@@ -57,10 +56,14 @@ Promise<APIGatewayAuthorizerResult> => {
     }
 
     const permissionsConfig = fileService.readConfigFile(config.configurationFile.filePath);
-    const tokenPermissions = ((decodedToken.payload as JwtPayload).scp || (decodedToken.payload as JwtPayload).roles) as string[];
+    if (typeof decodedToken.payload !== 'string') {
+      const tokenPermissions = (decodedToken.payload.scp || decodedToken.payload.roles) as string[];
 
-    return policyGenerator.generateConfigurationFilePolicy(permissionsConfig, tokenPermissions, event.methodArn)
-      || policyGenerator.generateUnauthorisedPolicy(event.methodArn);
+      return policyGenerator.generateConfigurationFilePolicy(permissionsConfig, tokenPermissions, event.methodArn)
+        || policyGenerator.generateUnauthorisedPolicy(event.methodArn);
+    }
+
+    return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
   }
 
   logger.info('Configuration file not enabled. Defaulting to grant / deny all endpoints');

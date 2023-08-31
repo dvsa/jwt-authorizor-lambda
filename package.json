@@ -23,10 +23,9 @@
   "dependencies": {
     "@types/jsonwebtoken": "^9.0.1",
     "aws-lambda": "^1.0.7",
-    "fp-ts": "2.16.1",
+    "fp-ts": "^2.16.1",
     "https-proxy-agent": "^5.0.1",
-    "iam-policy-generator": "^2.0.4",
-    "io-ts": "2.2.20",
+    "io-ts": "^2.2.20",
     "jsonwebtoken": "^9.0.0",
     "jwks-rsa": "^3.0.1"
   },

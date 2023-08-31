@@ -143,6 +143,18 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     expect(PolicyGenerator.prototype.generateUnauthorisedPolicy).toHaveBeenCalled();
   });
 
+  test('Returns generated unauthorised policy when configurationFile.enabled is true but decoded token has string payload', async () => {
+    process.env = { ...OLD_ENV, ENABLE_CONFIGURATION_FILE: 'true', CONFIGURATION_FILE_PATH: '/path/to/file' };
+
+    (TokenVerifier.prototype as jest.Mocked<TokenVerifier>).getVerifiedDecodedToken.mockResolvedValue({ ...TOKEN, payload: 'Not a JWT Payload' });
+
+    const res: APIGatewayAuthorizerResult = await handler(VALID_EVENT_MOCK, CONTEXT_MOCK);
+
+    expect(res).toBe(POLICY);
+    expect(TokenVerifier.prototype.getVerifiedDecodedToken).toHaveBeenCalled();
+    expect(PolicyGenerator.prototype.generateUnauthorisedPolicy).toHaveBeenCalled();
+  });
+
   test('Returns generated unauthorised policy when configurationFile.enabled is true but policy cannot be built from config file', async () => {
     process.env = { ...OLD_ENV, ENABLE_CONFIGURATION_FILE: 'true', CONFIGURATION_FILE_PATH: '/path/to/file' };
 
