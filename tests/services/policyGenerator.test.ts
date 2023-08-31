@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/dot-notation */
 import { APIGatewayAuthorizerResult, Statement } from 'aws-lambda';
 import { PolicyGenerator } from '../../src/services/policyGenerator';
+import { Logger } from '../../src/util/logger';
+
+jest.mock('../../src/util/logger');
 
 describe('PolicyGenerator', () => {
   let policyGenerator: PolicyGenerator;
@@ -32,7 +35,7 @@ describe('PolicyGenerator', () => {
   ];
 
   beforeEach(() => {
-    policyGenerator = new PolicyGenerator();
+    policyGenerator = new PolicyGenerator(new Logger(''));
   });
 
   describe('generateAuthorisedPolicy', () => {

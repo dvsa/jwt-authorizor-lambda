@@ -7,7 +7,7 @@ module.exports = merge(common, {
   devtool: 'source-map',
   plugins: [
     new CopyPlugin({
-      patterns: [{ from: './configuration.json', to: `.aws-sam/build/ApiGatewayTokenAuthorizerEvent/` }],
+      patterns: [{ from: './configuration.json', to: `.aws-sam/build/ApiGatewayTokenAuthorizerEvent/`, noErrorOnMissing: true }],
     }),
   ],
 });

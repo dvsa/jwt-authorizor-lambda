@@ -1,5 +1,6 @@
 import { APIGatewayAuthorizerResult, Statement } from 'aws-lambda';
 import { AuthorisedEndpoint, PermissionsConfig } from '../types/configuration';
+import { Logger } from '../util/logger';
 
 export class PolicyGenerator {
   private readonly AUTHORISED_ID = 'Authorised';
@@ -13,6 +14,12 @@ export class PolicyGenerator {
   private readonly DENY = 'Deny';
 
   private readonly INVOKE_ACTION = 'execute-api:Invoke';
+
+  logger: Logger;
+
+  constructor(logger: Logger) {
+    this.logger = logger;
+  }
 
   public generateAuthorisedPolicy(eventArn: string): APIGatewayAuthorizerResult {
     const resourceArn = this.generateWildcardArn(eventArn);
@@ -50,6 +57,7 @@ export class PolicyGenerator {
     const statements = roles.flatMap((role) => this.generateStatementsForRole(role, configFileContents, eventMethodArn));
 
     if (statements.length === 0) {
+      this.logger.info('No permissions config found for roles');
       return undefined;
     }
 
