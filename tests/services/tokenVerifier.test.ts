@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/dot-notation */
 import { sign } from 'jsonwebtoken';
 import createJWKSMock from 'mock-jwks';
 import { TokenVerifier } from '../../src/services/tokenVerifier';
@@ -109,8 +108,8 @@ describe('Test tokenVerifier', () => {
 
     expect(cognitoSpy).toHaveBeenCalled();
     expect(azureSpy).not.toHaveBeenCalled();
-    expect(res.header.typ).toBe('JWT');
-    expect(res.payload['iss']).toBe('https://cognito-idp.region.amazonaws.com/pool_id');
+    expect(res.header).toHaveProperty('typ', 'JWT');
+    expect(res.payload).toHaveProperty('iss', 'https://cognito-idp.region.amazonaws.com/pool_id');
   });
 
   test('getVerifiedDecodedToken() to call azure.verify for a cognito JWT and return the decoded token', async () => {
@@ -130,8 +129,8 @@ describe('Test tokenVerifier', () => {
 
     expect(azureSpy).toHaveBeenCalled();
     expect(cognitoSpy).not.toHaveBeenCalled();
-    expect(res.header.typ).toBe('JWT');
-    expect(res.payload['iss']).toBe('https://sts.windows.net/tenant_id/');
+    expect(res.header).toHaveProperty('typ', 'JWT');
+    expect(res.payload).toHaveProperty('iss', 'https://sts.windows.net/tenant_id/');
     jwks.stop();
   });
 

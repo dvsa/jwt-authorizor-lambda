@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/dot-notation */
 import { APIGatewayAuthorizerResult, Statement } from 'aws-lambda';
 import { PolicyGenerator } from '../../src/services/policyGenerator';
 import { Logger } from '../../src/util/logger';
@@ -46,9 +45,9 @@ describe('PolicyGenerator', () => {
 
       expect(result.principalId).toBe('Authorised');
       expect(result.policyDocument.Version).toBe('2012-10-17');
-      expect(statement.Effect).toBe('Allow');
-      expect(statement['Action']).toBe('execute-api:Invoke');
-      expect(statement['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/*');
+      expect(statement).toHaveProperty('Effect', 'Allow');
+      expect(statement).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(statement).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/*');
     });
   });
 
@@ -60,9 +59,9 @@ describe('PolicyGenerator', () => {
 
       expect(result.principalId).toBe('Unauthorised');
       expect(result.policyDocument.Version).toBe('2012-10-17');
-      expect(statement.Effect).toBe('Deny');
-      expect(statement['Action']).toBe('execute-api:Invoke');
-      expect(statement['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/*');
+      expect(statement).toHaveProperty('Effect', 'Deny');
+      expect(statement).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(statement).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/*');
     });
   });
 
@@ -75,17 +74,18 @@ describe('PolicyGenerator', () => {
 
       expect(result.policyDocument.Statement).toHaveLength(3);
 
-      expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
-      expect(result.policyDocument.Statement[0]['Action']).toBe('execute-api:Invoke');
-      expect(result.policyDocument.Statement[0]['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
 
-      expect(result.policyDocument.Statement[1].Effect).toBe('Allow');
-      expect(result.policyDocument.Statement[1]['Action']).toBe('execute-api:Invoke');
-      expect(result.policyDocument.Statement[1]['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/POST/endpoint/two');
+      expect(result.policyDocument.Statement[1]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[1]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[1]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/POST/endpoint/two');
 
-      expect(result.policyDocument.Statement[2].Effect).toBe('Allow');
-      expect(result.policyDocument.Statement[2]['Action']).toBe('execute-api:Invoke');
-      expect(result.policyDocument.Statement[2]['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/three');
+      expect(result.policyDocument.Statement[2]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[2]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[2]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/three');
+
     });
 
     test('should return an allow policy with specific ARNs for the given roles only', () => {
@@ -96,13 +96,13 @@ describe('PolicyGenerator', () => {
 
       expect(result.policyDocument.Statement).toHaveLength(2);
 
-      expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
-      expect(result.policyDocument.Statement[0]['Action']).toBe('execute-api:Invoke');
-      expect(result.policyDocument.Statement[0]['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
 
-      expect(result.policyDocument.Statement[1].Effect).toBe('Allow');
-      expect(result.policyDocument.Statement[1]['Action']).toBe('execute-api:Invoke');
-      expect(result.policyDocument.Statement[1]['Resource']).toBe('arn:aws:execute-api:eu-west-2:123456789012:/*/POST/endpoint/two');
+      expect(result.policyDocument.Statement[1]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[1]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[1]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/POST/endpoint/two');
     });
 
     test('should return undefined when role does not exist in config', () => {

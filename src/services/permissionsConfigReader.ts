@@ -19,8 +19,7 @@ export class PermissionsConfigReader {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       const fileContents = fs.readFileSync(filePath, 'utf-8');
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const permissionsConfig = JSON.parse(fileContents);
+      const permissionsConfig: unknown = JSON.parse(fileContents);
 
       const isValidJson = this.validator.validateJsonAgainstSchema(PERMISSIONS_FILE_SCHEMA, permissionsConfig);
 
