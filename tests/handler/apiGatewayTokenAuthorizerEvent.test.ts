@@ -41,6 +41,14 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     },
   };
 
+  const COGNITO_TOKEN: Jwt = {
+    header: { alg: '' },
+    signature: '',
+    payload: {
+      'cognito:groups': ['FirstGroup', 'SecondGroup'],
+    },
+  };
+
   beforeAll(() => {
     process.env.COGNITO_POOL_ID = 'pool_id';
     process.env.COGNITO_REGION = 'region';
@@ -169,7 +177,20 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     expect(PolicyGenerator.prototype.generateUnauthorisedPolicy).toHaveBeenCalled();
   });
 
-  test('Returns authorised policy generated from configuration file when configurationFile.enabled is true', async () => {
+  test('Returns authorised policy generated from configuration file when configurationFile.enabled is true and cognito:groups is on the decoded token', async () => {
+    process.env = { ...OLD_ENV, ENABLE_CONFIGURATION_FILE: 'true', CONFIGURATION_FILE_PATH: '/path/to/file' };
+
+    (TokenVerifier.prototype as jest.Mocked<TokenVerifier>).getVerifiedDecodedToken.mockResolvedValue(COGNITO_TOKEN);
+
+    const res: APIGatewayAuthorizerResult = await handler(VALID_EVENT_MOCK, CONTEXT_MOCK);
+
+    expect(res).toBe(POLICY);
+    expect(TokenVerifier.prototype.getVerifiedDecodedToken).toHaveBeenCalled();
+    expect(PermissionsConfigReader.prototype.readConfigFile).toHaveBeenCalled();
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalledWith([], ['FirstGroup', 'SecondGroup'], VALID_EVENT_MOCK.methodArn);
+  });
+
+  test('Returns authorised policy generated from configuration file when configurationFile.enabled is true and roles is on the decoded token', async () => {
     process.env = { ...OLD_ENV, ENABLE_CONFIGURATION_FILE: 'true', CONFIGURATION_FILE_PATH: '/path/to/file' };
 
     const res: APIGatewayAuthorizerResult = await handler(VALID_EVENT_MOCK, CONTEXT_MOCK);
@@ -177,6 +198,6 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     expect(res).toBe(POLICY);
     expect(TokenVerifier.prototype.getVerifiedDecodedToken).toHaveBeenCalled();
     expect(PermissionsConfigReader.prototype.readConfigFile).toHaveBeenCalled();
-    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalled();
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalledWith([], ['FirstRole', 'SecondRole'], VALID_EVENT_MOCK.methodArn);
   });
 });

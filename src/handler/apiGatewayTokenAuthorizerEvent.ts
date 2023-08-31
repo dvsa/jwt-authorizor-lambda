@@ -57,7 +57,7 @@ Promise<APIGatewayAuthorizerResult> => {
 
     const permissionsConfig = fileService.readConfigFile(config.configurationFile.filePath);
     if (typeof decodedToken.payload !== 'string') {
-      const tokenPermissions = (decodedToken.payload.scp || decodedToken.payload.roles) as string[];
+      const tokenPermissions = (decodedToken.payload['cognito:groups'] || decodedToken.payload.roles) as string[];
 
       return policyGenerator.generateConfigurationFilePolicy(permissionsConfig, tokenPermissions, event.methodArn)
         || policyGenerator.generateUnauthorisedPolicy(event.methodArn);
