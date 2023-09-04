@@ -8,6 +8,8 @@ The lambda supports reading permissions for specified endpoints from a configura
 
 For a given token, authorised endpoints listed in the config file for the token's role will be added to the returned authorised policy.
 
+The application repository making use of the authoriser should store the configuration file in a location suitable to their repository structure. The application CI Build Job should be updated to produce a zip archive containing the configuration file. This should be uploaded to an S3 archive store. A [Lambda Layer](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html) should be created from this location in S3 to enable the authoriser to access the configuration file.
+
 An example configuration file in the required format can be found [here](/configuration.example.json).
 
 Example policy statements returned for this example are:
