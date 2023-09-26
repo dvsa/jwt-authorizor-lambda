@@ -1,10 +1,12 @@
 import type { APIGatewayAuthorizerResult, APIGatewayTokenAuthorizerEvent, Context } from 'aws-lambda';
-import { Action } from 'iam-policy-generator';
 import { loadConfig } from '../util/configuration';
 import { Cognito } from '../services/cognito';
 import { Azure } from '../services/azure';
 import { Logger } from '../util/logger';
 import { TokenVerifier } from '../services/tokenVerifier';
+import { PolicyGenerator } from '../services/policyGenerator';
+import { PermissionsConfigReader } from '../services/permissionsConfigReader';
+import { SchemaValidator } from '../services/schemaValidator';
 
 /**
  * Lambda Handler
@@ -17,65 +19,58 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent, context: Co
 Promise<APIGatewayAuthorizerResult> => {
   const config = loadConfig();
   const logger = new Logger(context.awsRequestId);
+  const policyGenerator = new PolicyGenerator(logger);
+  const schemaValidator = new SchemaValidator();
+  const fileService = new PermissionsConfigReader(schemaValidator, logger);
   const verifier = new TokenVerifier(
     new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientIds, logger),
     new Azure(config.azure.tenantId, config.azure.clientId, logger),
     logger,
   );
 
-  const arnParts = event.methodArn.split(':');
-  const apiGatewayArn = arnParts[5].split('/');
-
-  // Create wildcard resource
-  const resourceArn = `${arnParts[0]}:${arnParts[1]}:${arnParts[2]}:${arnParts[3]}:${arnParts[4]}:${apiGatewayArn[0]}/*/*`;
-
   if (!event.authorizationToken.trim()) {
     logger.error('no caller-supplied-token (no authorization header on original request)');
-    return unauthorisedPolicy(resourceArn);
+    return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
   }
 
   const [bearerPrefix, token] = event.authorizationToken.split(' ');
   if (bearerPrefix !== 'Bearer') {
     logger.error("caller-supplied-token must start with 'Bearer ' (case-sensitive)");
-    return unauthorisedPolicy(resourceArn);
+    return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
   }
 
   if (!token || !token.trim()) {
     logger.error("'Bearer ' prefix present, but token is blank or missing");
-    return unauthorisedPolicy(resourceArn);
+    return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
   }
 
   if (process.env.IS_MOCK === 'true') {
-    return authorisedPolicy(resourceArn);
+    return policyGenerator.generateAuthorisedPolicy(event.methodArn);
   }
+
+  if (config.configurationFile.enabled) {
+    const decodedToken = await verifier.getVerifiedDecodedToken(token);
+
+    if (!decodedToken) {
+      return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
+    }
+
+    const permissionsConfig = fileService.readConfigFile(config.configurationFile.filePath);
+    if (typeof decodedToken.payload !== 'string') {
+      const tokenPermissions = (decodedToken.payload['cognito:groups'] || decodedToken.payload.roles) as string[];
+
+      return policyGenerator.generateConfigurationFilePolicy(permissionsConfig, tokenPermissions, event.methodArn)
+        || policyGenerator.generateUnauthorisedPolicy(event.methodArn);
+    }
+
+    return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
+  }
+
+  logger.info('Configuration file not enabled. Defaulting to grant / deny all endpoints');
 
   if (await verifier.verify(token)) {
-    return authorisedPolicy(resourceArn);
+    return policyGenerator.generateAuthorisedPolicy(event.methodArn);
   }
 
-  return unauthorisedPolicy(resourceArn);
+  return policyGenerator.generateUnauthorisedPolicy(event.methodArn);
 };
-
-const authorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
-  principalId: 'Authorised',
-  policyDocument: {
-    Version: '2012-10-17',
-    Statement: [{
-      Effect: 'Allow',
-      Action: Action.API_GATEWAY.INVOKE,
-      Resource: arn,
-    }],
-  },
-});
-
-const unauthorisedPolicy = (arn: string): APIGatewayAuthorizerResult => ({
-  principalId: 'Unauthorised',
-  policyDocument: {
-    Version: '2012-10-17',
-    Statement: [{
-      Effect: 'Deny',
-      Action: Action.API_GATEWAY.INVOKE,
-      Resource: arn,
-    }],
-  },
-});
