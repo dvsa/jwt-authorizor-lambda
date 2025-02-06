@@ -27,7 +27,7 @@
     "https-proxy-agent": "^5.0.1",
     "io-ts": "^2.2.20",
     "jsonwebtoken": "^9.0.0",
-    "jwks-rsa": "^4.15.5"
+    "jwks-rsa": "^3.1.0"
   },
   "devDependencies": {
     "@dvsa/eslint-config-ts": "^3.0.0",
