@@ -1,6 +1,6 @@
 {
   "name": "jwt-authorizor-lambda",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Lambda to handle API Gateway token authorizor events for multiple JWT issuers",
   "main": "index.js",
   "scripts": {
@@ -27,7 +27,7 @@
     "https-proxy-agent": "^5.0.1",
     "io-ts": "^2.2.20",
     "jsonwebtoken": "^9.0.0",
-    "jwks-rsa": "^3.0.1"
+    "jwks-rsa": "^3.1.0"
   },
   "devDependencies": {
     "@dvsa/eslint-config-ts": "^3.0.0",
@@ -37,7 +37,7 @@
     "@types/node": "^18.15.13",
     "@types/uuid": "^9.0.1",
     "archiver": "^5.3.1",
-    "aws-sam-webpack-plugin": "^0.13.0",
+    "aws-sam-webpack-plugin": "^0.15.1",
     "copy-webpack-plugin": "^11.0.0",
     "current-git-branch": "^1.1.0",
     "eslint": "^8.39.0",
@@ -59,6 +59,6 @@
     "webpack-merge": "^5.8.0"
   },
   "engines": {
-    "node": "^18.15.0"
+    "node": "^20.18.1"
   }
 }
