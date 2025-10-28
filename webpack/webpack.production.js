@@ -3,16 +3,15 @@ const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const archiver = require('archiver');
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
-let branchName = require('current-git-branch');
+const child = require('child_process');
 
 const gitRevisionPlugin = new GitRevisionPlugin()
 const LAMBDA_NAME = 'ApiGatewayTokenAuthorizerEvent';
 const OUTPUT_FOLDER = './dist'
 const REPO_NAME = 'jwt-authorizor-lambda';
-if (typeof branchName !== 'function' && branchName.default && typeof branchName.default === 'function') {
-    branchName = branchName.default;
-}
-const BRANCH_NAME = `${branchName()}`.replace(/\//g, '-');
+
+
+const BRANCH_NAME = child.execSync('git rev-parse --abbrev-ref HEAD').toString().trim().replace(/\//g, '-');
 class BundlePlugin {
   constructor(params) {
     this.archives = params.archives;
@@ -20,7 +19,7 @@ class BundlePlugin {
   }
 
   apply(compiler) {
-    compiler.hooks.afterEmit.tap('zip-pack-plugin', async (compilation) => {
+    compiler.hooks.afterEmit.tap('zip-pack-plugin', async () => {
       this.archives.forEach(async (archive) => {
         await this.createArchive(archive.inputPath, archive.outputPath, archive.outputName, archive.ignore);
       })
@@ -34,7 +33,7 @@ class BundlePlugin {
   createArchive(inputPath, outputPath, outputName, ignore) {
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath)
-    };
+    }
     const output = fs.createWriteStream(`${outputPath}/${outputName}.zip`);
     const archive = archiver('zip');
 
@@ -56,7 +55,7 @@ class BundlePlugin {
     );
     return archive.finalize();
   }
-};
+}
 
 
 module.exports = env => {
