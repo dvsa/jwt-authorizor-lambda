@@ -111,3 +111,7 @@ env.json
 invoke/
 
 configuration.json
+/.idea/
+/COMMITHASH
+/LASTCOMMITDATETIME
+/VERSION
