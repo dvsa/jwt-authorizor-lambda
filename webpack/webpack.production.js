@@ -2,13 +2,16 @@ const fs = require('fs-extra')
 const { merge } = require('webpack-merge');
 const common = require('./webpack.common.js');
 const archiver = require('archiver');
-const branchName = require('current-git-branch');
 const { GitRevisionPlugin } = require('git-revision-webpack-plugin')
+let branchName = require('current-git-branch');
 
 const gitRevisionPlugin = new GitRevisionPlugin()
 const LAMBDA_NAME = 'ApiGatewayTokenAuthorizerEvent';
 const OUTPUT_FOLDER = './dist'
 const REPO_NAME = 'jwt-authorizor-lambda';
+if (typeof branchName !== 'function' && branchName.default && typeof branchName.default === 'function') {
+    branchName = branchName.default;
+}
 const BRANCH_NAME = `${branchName()}`.replace(/\//g, '-');
 class BundlePlugin {
   constructor(params) {
@@ -42,11 +45,11 @@ class BundlePlugin {
     archive.on('error', function(err){
         throw err;
     });
-    
+
     archive.pipe(output);
     archive.glob(
-      `**/*`, 
-      { 
+      `**/*`,
+      {
         cwd: inputPath,
         skip: ignore
       }
