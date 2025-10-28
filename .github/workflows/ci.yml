@@ -48,7 +48,7 @@ jobs:
       node-version: '22.x'
 
   upload-to-s3:
-    if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
+    if: startsWith(github.ref, 'refs/heads/feat') || startsWith(github.ref, 'refs/heads/feature') || startsWith(github.ref, 'refs/heads/fix') || startsWith(github.ref, 'refs/heads/main')
     uses: dvsa/.github/.github/workflows/upload-to-s3.yaml@v5.0.3
     needs: [ lint, test, build, build-names ]
     with:
@@ -65,7 +65,7 @@ jobs:
       AWS_ROLE_TO_ASSUME_ARN: ${{ secrets.AWS_ROLE_TO_ASSUME_ARN }}
 
   update-lambda-code:
-    if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
+    if: startsWith(github.ref, 'refs/heads/feat') || startsWith(github.ref, 'refs/heads/feature') || startsWith(github.ref, 'refs/heads/fix') || startsWith(github.ref, 'refs/heads/main')
     uses: dvsa/.github/.github/workflows/update-lambda-function.yaml@v5.0.3
     needs: [ build-names, build, upload-to-s3 ]
     with:
