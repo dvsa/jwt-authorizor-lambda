@@ -5,17 +5,17 @@ on:
 
 jobs:
   lint:
-    uses: dvsa/.github/.github/workflows/nodejs-lint.yaml@v5.0.3
+    uses: dvsa/.github/.github/workflows/nodejs-lint.yaml@v5.0.9
     with:
-      node-version: '20.x'
+      node-version: '22.x'
   test:
-    uses: dvsa/.github/.github/workflows/nodejs-test.yaml@v5.0.3
+    uses: dvsa/.github/.github/workflows/nodejs-test.yaml@v5.0.9
     with:
-      node-version: '20.x'
+      node-version: '22.x'
 
   security:
-    uses: dvsa/.github/.github/workflows/nodejs-security.yaml@v5.0.3
-  
+    uses: dvsa/.github/.github/workflows/nodejs-security.yaml@v5.0.9
+
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -28,7 +28,7 @@ jobs:
     env:
       BRANCH_NAME: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set short sha output
         id: sha
         run: echo "SHORT_SHA=$(git rev-parse --short=11 HEAD)" >> $GITHUB_OUTPUT
@@ -39,17 +39,17 @@ jobs:
           echo "NAME=${PRETTY_BRANCH_NAME}" >> $GITHUB_OUTPUT
 
   build:
-    uses: dvsa/.github/.github/workflows/nodejs-build.yaml@v5.0.3
+    uses: dvsa/.github/.github/workflows/nodejs-build.yaml@v5.0.9
     needs: [ build-names ]
     with:
       upload-artifact: true
       build-folder: dist
       build-command: npm run build:prod
-      node-version: '20.x'
+      node-version: '22.x'
 
   upload-to-s3:
     if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
-    uses: dvsa/.github/.github/workflows/upload-to-s3.yaml@v5.0.3
+    uses: dvsa/.github/.github/workflows/upload-to-s3.yaml@v5.0.9
     needs: [ lint, test, build, build-names ]
     with:
       environment: dev
@@ -66,7 +66,7 @@ jobs:
 
   update-lambda-code:
     if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
-    uses: dvsa/.github/.github/workflows/update-lambda-function.yaml@v5.0.3
+    uses: dvsa/.github/.github/workflows/update-lambda-function.yaml@v5.0.9
     needs: [ build-names, build, upload-to-s3 ]
     with:
       environment: dev

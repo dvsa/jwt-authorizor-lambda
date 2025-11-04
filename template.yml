@@ -7,7 +7,7 @@ Resources:
     Properties:
       CodeUri: ./src/handler
       Handler: apiGatewayTokenAuthorizerEvent.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Environment:
         Variables:
           COGNITO_POOL_ID: ''
