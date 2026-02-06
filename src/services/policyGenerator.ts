@@ -1,4 +1,4 @@
-import { APIGatewayAuthorizerResult, Statement } from 'aws-lambda';
+import type { APIGatewayAuthorizerResult, Statement } from 'aws-lambda';
 import { AuthorisedEndpoint, PermissionsConfig } from '../types/configuration';
 import { Logger } from '../util/logger';
 
