@@ -59,6 +59,10 @@ Promise<APIGatewayAuthorizerResult> => {
     if (typeof decodedToken.payload !== 'string') {
       const tokenPermissions = (decodedToken.payload['cognito:groups'] || decodedToken.payload.roles) as string[];
 
+      if (process.env.IS_PROXY === 'true') {
+        return policyGenerator.generateConfigurationFilePolicyForProxy(permissionsConfig, tokenPermissions, event.methodArn);
+      }
+
       return policyGenerator.generateConfigurationFilePolicy(permissionsConfig, tokenPermissions, event.methodArn)
         || policyGenerator.generateUnauthorisedPolicy(event.methodArn);
     }

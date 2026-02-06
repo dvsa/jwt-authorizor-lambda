@@ -53,6 +53,45 @@ export class PolicyGenerator {
     };
   }
 
+  /**
+   * Generates an API Gateway authorizer policy by evaluating the requested HTTP
+   * method and path against a permissions configuration and the user's roles.
+   *
+   * If the route the user is trying to access matches the role they have then an "Allow" policy is returned;
+   * otherwise an explicit "Deny" policy is generated.
+   *
+   * @param configFileContents - Parsed permissions configuration defining which
+   * roles are allowed to access which HTTP verbs and paths
+   * @param userRoles - List of roles associated with the requesting user
+   * @param eventMethodArn - API Gateway method ARN representing the incoming request
+   * @returns An API Gateway authorizer result containing a policy document
+   *          indicating whether access is allowed or denied
+   */
+  public generateConfigurationFilePolicyForProxy(configFileContents: PermissionsConfig, userRoles: string[], eventMethodArn: string): APIGatewayAuthorizerResult {
+    // Extract verb + path from ARN
+    const [, , , , , resource] = eventMethodArn.split(':');
+    const [, , httpVerb, ...pathParts] = resource.split('/');
+    const requestPath = `/${pathParts.join('/')}`;
+
+    const isAllowed = configFileContents.some((roleConfig) => userRoles.includes(roleConfig.role)
+        && roleConfig.authorisedEndpoints.some((ep) => ep.httpVerb === httpVerb
+            && ep.url === requestPath));
+
+    this.logger.info(`User ${isAllowed ? '' : 'not '}authorised to access ${requestPath} with the roles: ${JSON.stringify(userRoles)}`);
+
+    return {
+      principalId: isAllowed ? this.AUTHORISED_ID : this.UNAUTHORISED_ID,
+      policyDocument: {
+        Version: this.VERSION,
+        Statement: [{
+          Effect: isAllowed ? this.ALLOW : this.DENY,
+          Action: this.INVOKE_ACTION,
+          Resource: eventMethodArn,
+        }],
+      },
+    };
+  }
+
   public generateConfigurationFilePolicy(configFileContents: PermissionsConfig, roles: string[], eventMethodArn: string): APIGatewayAuthorizerResult {
     const statements = roles.flatMap((role) => this.generateStatementsForRole(role, configFileContents, eventMethodArn));
 
