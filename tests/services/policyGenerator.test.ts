@@ -85,7 +85,6 @@ describe('PolicyGenerator', () => {
       expect(result.policyDocument.Statement[2]).toHaveProperty('Effect', 'Allow');
       expect(result.policyDocument.Statement[2]).toHaveProperty('Action', 'execute-api:Invoke');
       expect(result.policyDocument.Statement[2]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/three');
-
     });
 
     test('should return an allow policy with specific ARNs for the given roles only', () => {
@@ -109,6 +108,36 @@ describe('PolicyGenerator', () => {
       const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicy(PERMISSIONS_CONFIG, ['UnknownRole'], EVENT_ARN);
 
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('generateConfigurationFilePolicyForProxy', () => {
+    test('should return an allow policy with specific ARN for the given role', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['FirstRole'], requestArn);
+
+      expect(result.principalId).toBe('Authorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
+    });
+
+    test('should return a deny policy if a user is trying to access an ARN with the incorrect role', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
+
+      expect(result.principalId).toBe('Unauthorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Deny');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
     });
   });
 });

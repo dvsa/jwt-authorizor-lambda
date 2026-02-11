@@ -63,6 +63,7 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     (PolicyGenerator.prototype as jest.Mocked<PolicyGenerator>).generateAuthorisedPolicy.mockReturnValue(POLICY);
     (PolicyGenerator.prototype as jest.Mocked<PolicyGenerator>).generateUnauthorisedPolicy.mockReturnValue(POLICY);
     (PolicyGenerator.prototype as jest.Mocked<PolicyGenerator>).generateConfigurationFilePolicy.mockReturnValue(POLICY);
+    (PolicyGenerator.prototype as jest.Mocked<PolicyGenerator>).generateConfigurationFilePolicyForProxy.mockReturnValue(POLICY);
     (PermissionsConfigReader.prototype as jest.Mocked<PermissionsConfigReader>).readConfigFile.mockReturnValue([]);
   });
 
@@ -199,5 +200,49 @@ describe('Test apiGatewayTokenAuthorizerEvent', () => {
     expect(TokenVerifier.prototype.getVerifiedDecodedToken).toHaveBeenCalled();
     expect(PermissionsConfigReader.prototype.readConfigFile).toHaveBeenCalled();
     expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalledWith([], ['FirstRole', 'SecondRole'], VALID_EVENT_MOCK.methodArn);
+  });
+
+  test('Should call generateConfigurationFilePolicyForProxy when IS_PROXY is enabled and set to true', async () => {
+    process.env = {
+      ...OLD_ENV,
+      IS_PROXY: 'true',
+      ENABLE_CONFIGURATION_FILE: 'true',
+      CONFIGURATION_FILE_PATH: '/path/to/file',
+    };
+
+    const res: APIGatewayAuthorizerResult = await handler(VALID_EVENT_MOCK, CONTEXT_MOCK);
+
+    expect(TokenVerifier.prototype.getVerifiedDecodedToken).toHaveBeenCalled();
+    expect(PermissionsConfigReader.prototype.readConfigFile).toHaveBeenCalled();
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicyForProxy).toHaveBeenCalledWith([], ['FirstRole', 'SecondRole'], VALID_EVENT_MOCK.methodArn);
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).not.toHaveBeenCalled();
+    expect(res).toBe(POLICY);
+  });
+
+  test('Should not call generateConfigurationFilePolicyForProxy when IS_PROXY is set to false or not provided', async () => {
+    process.env = {
+      ...OLD_ENV,
+      ENABLE_CONFIGURATION_FILE: 'true',
+      CONFIGURATION_FILE_PATH: '/path/to/file',
+    };
+    await handler(VALID_EVENT_MOCK, CONTEXT_MOCK);
+
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicyForProxy).not.toHaveBeenCalled();
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalled();
+
+    process.env = {
+      ...OLD_ENV,
+      IS_PROXY: 'false',
+      ENABLE_CONFIGURATION_FILE: 'true',
+      CONFIGURATION_FILE_PATH: '/path/to/file',
+    };
+
+    await handler(VALID_EVENT_MOCK, CONTEXT_MOCK);
+
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicyForProxy).not.toHaveBeenCalled();
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalled();
+
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicyForProxy).toHaveBeenCalledTimes(0);
+    expect(PolicyGenerator.prototype.generateConfigurationFilePolicy).toHaveBeenCalledTimes(2);
   });
 });
