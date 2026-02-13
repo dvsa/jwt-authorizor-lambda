@@ -3,7 +3,6 @@ import { Configuration } from '../types/configuration';
 export const loadConfig = (): Configuration => {
   const errors = [];
   [
-    'AZURE_CLIENT_ID',
     'AZURE_TENANT_ID',
     'COGNITO_POOL_ID',
     'COGNITO_REGION',
@@ -28,13 +27,19 @@ export const loadConfig = (): Configuration => {
     // allow up to 9999 cognito client ids
     const cognitoRegex = /COGNITO_CLIENT_ID(_[0-9]{,4})?/g;
     if (key.match(cognitoRegex)) {
-      cognitoClientIds.push(process.env[`${key}`]);
+      const envValue = process.env[`${key}`];
+      if (envValue) {
+        cognitoClientIds.push(envValue);
+      }
     }
 
     // allow up to 9999 azure client ids
     const azureRegex = /AZURE_CLIENT_ID(_[0-9]{,4})?/g;
     if (key.match(azureRegex)) {
-      azureClientIds.push(process.env[`${key}`]);
+      const envValue = process.env[`${key}`];
+      if (envValue) {
+        azureClientIds.push(envValue);
+      }
     }
   });
 

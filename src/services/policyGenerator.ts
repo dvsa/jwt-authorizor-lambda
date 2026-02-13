@@ -77,7 +77,7 @@ export class PolicyGenerator {
         && roleConfig.authorisedEndpoints.some((ep) => {
           if (ep.httpVerb !== httpVerb) return false;
 
-          // Handle wildcard matching / path params
+          // Handle wildcard paths
           if (ep.url.endsWith('*')) {
             // remove '*'
             const basePath = ep.url.slice(0, -1);

@@ -10,6 +10,8 @@ describe('Test configuration', () => {
     delete process.env.COGNITO_REGION;
     delete process.env.AZURE_TENANT_ID;
     delete process.env.AZURE_CLIENT_ID;
+    delete process.env.AZURE_CLIENT_ID_1;
+    delete process.env.AZURE_CLIENT_ID_2;
     delete process.env.ENABLE_CONFIGURATION_FILE;
     delete process.env.CONFIGURATION_FILE_PATH;
   });
@@ -26,8 +28,13 @@ describe('Test configuration', () => {
     expect(() => loadConfig()).toThrow(/AZURE_TENANT_ID/);
   });
 
-  test('loadConfig() should throw error when azure client id env var missing', () => {
-    expect(() => loadConfig()).toThrow(/AZURE_CLIENT_ID/);
+  test('loadConfig() should throw an error when no azure client id env vars have been set', () => {
+    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
+    process.env.COGNITO_REGION = 'cognito_region';
+    process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
+    process.env.AZURE_TENANT_ID = 'azure_tenant_id';
+
+    expect(() => loadConfig()).toThrow('Missing azure client id environment variables of pattern: AZURE_CLIENT_ID_[0-9]*');
   });
 
   test('loadConfig() should throw error when enable configuration file env var is true but file path env var is missing', () => {
@@ -47,7 +54,7 @@ describe('Test configuration', () => {
     process.env.AZURE_TENANT_ID = 'azure_tenant_id';
     process.env.AZURE_CLIENT_ID = 'azure_client_id';
 
-    expect(() => loadConfig()).toThrow('');
+    expect(() => loadConfig()).toThrow('Missing cognito client id environment variables of pattern: COGNITO_CLIENT_ID_[0-9]*');
   });
 
   test('loadConfig() should handle single cognito client id', () => {
@@ -55,10 +62,23 @@ describe('Test configuration', () => {
     process.env.COGNITO_REGION = 'cognito_region';
     process.env.AZURE_TENANT_ID = 'azure_tenant_id';
     process.env.AZURE_CLIENT_ID = 'azure_client_id';
+    process.env.AZURE_CLIENT_ID_1 = 'azure_client_id_1';
     process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
 
     const config = loadConfig();
     expect(config.cognito.clientIds).toEqual(['cognito_client_id']);
+  });
+
+  test('loadConfig() should handle single azure client id', () => {
+    process.env.COGNITO_POOL_ID = 'cognito_pool_id';
+    process.env.COGNITO_REGION = 'cognito_region';
+    process.env.AZURE_TENANT_ID = 'azure_tenant_id';
+    process.env.AZURE_CLIENT_ID = 'azure_client_id';
+    process.env.COGNITO_CLIENT_ID = 'cognito_client_id';
+    process.env.COGNITO_CLIENT_ID_1 = 'cognito_client_id_1';
+
+    const config = loadConfig();
+    expect(config.azure.clientIds).toEqual(['azure_client_id']);
   });
 
   test('loadConfig() should return config instance when env vars exist', () => {
@@ -68,7 +88,8 @@ describe('Test configuration', () => {
     process.env.COGNITO_POOL_ID = 'cognito_pool_id';
     process.env.COGNITO_REGION = 'cognito_region';
     process.env.AZURE_TENANT_ID = 'azure_tenant_id';
-    process.env.AZURE_CLIENT_ID = 'azure_client_id';
+    process.env.AZURE_CLIENT_ID_1 = 'azure_client_id_1';
+    process.env.AZURE_CLIENT_ID_2 = 'azure_client_id_2';
     process.env.ENABLE_CONFIGURATION_FILE = 'true';
     process.env.CONFIGURATION_FILE_PATH = '/path/to/config/file';
 
@@ -77,7 +98,7 @@ describe('Test configuration', () => {
     expect(config.cognito.region).toBe('cognito_region');
     expect(config.cognito.clientIds).toEqual(['cognito_client_id_1', 'cognito_client_id_2']);
     expect(config.azure.tenantId).toBe('azure_tenant_id');
-    expect(config.azure.clientIds).toEqual(['azure_client_id']);
+    expect(config.azure.clientIds).toEqual(['azure_client_id_1', 'azure_client_id_2']);
     expect(config.configurationFile.enabled).toBe(true);
     expect(config.configurationFile.filePath).toBe('/path/to/config/file');
   });

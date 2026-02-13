@@ -73,4 +73,21 @@ describe('Test Azure', () => {
     expect(await azure.verify(token, decodedToken)).toBe(false);
     expect(loggerSpy).toHaveBeenCalledWith('Failed to verify jwt:: token contains invalid audience');
   });
+
+  test('verify() should handle if token.aud is an array or string and return true if valid', async () => {
+    const logger = new Logger('');
+    const azure = new Azure('tenant_id', ['client_id'], logger);
+
+    // token.aud as string
+    const tokenWithStringAud = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
+    const decodedToken = decode(tokenWithStringAud, { complete: true });
+
+    expect(await azure.verify(tokenWithStringAud, decodedToken)).toBe(true);
+
+    // token.aud as array of strings
+    const tokenWithArrayAud = jwks.token({ iss: azure.getIssuer(), aud: ['client_id', 'client_id_2'] });
+    const decodedToken2 = decode(tokenWithArrayAud, { complete: true });
+
+    expect(await azure.verify(tokenWithArrayAud, decodedToken2)).toBe(true);
+  });
 });

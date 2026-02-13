@@ -19,8 +19,15 @@ export class Azure {
 
   public async verify(rawToken: string, decodedToken: Jwt): Promise<boolean> {
     try {
-      const decodedPayload = decodedToken.payload as JwtPayload & { aud: string };
-      const audience = this.clientIds.find((clientId) => clientId === decodedPayload.aud);
+      const decodedPayload = decodedToken.payload as JwtPayload;
+      const tokenAud = decodedPayload.aud;
+
+      let audience: string | undefined;
+      if (Array.isArray(tokenAud)) {
+        audience = this.clientIds.find((clientId) => tokenAud.includes(clientId));
+      } else if (typeof tokenAud === 'string') {
+        audience = this.clientIds.find((clientId) => clientId === tokenAud);
+      }
 
       if (!audience) {
         this.logger.info('Failed to verify jwt:: token contains invalid audience');
