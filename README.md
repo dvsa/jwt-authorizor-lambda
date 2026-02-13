@@ -43,7 +43,7 @@ The following environment variables need to be set for the lambda to function.
 - `COGNITO_POOL_ID `
 - `COGNITO_REGION`
 - `AZURE_TENANT_ID`
-- `AZURE_CLIENT_ID`
+- `AZURE_CLIENT_ID(_[0-9]+)?` - Allows either single client id or multiple
 - `COGNITO_CLIENT_ID(_[0-9]+)?` - Allows either single client id or multiple
 
 The following are optional environment variables which can be set.

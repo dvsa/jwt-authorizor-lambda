@@ -26,7 +26,7 @@ describe('Test Azure', () => {
 
   test('getIssuer() should return url with tenant id', () => {
     // Setup sut
-    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
 
     // Expectations
     expect(azure.getIssuer()).toBe('https://sts.windows.net/tenant_id/');
@@ -34,7 +34,7 @@ describe('Test Azure', () => {
 
   test('verify() should return true for correct jwt', async () => {
     // Setup sut
-    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
@@ -48,7 +48,7 @@ describe('Test Azure', () => {
     // Setup sut
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
-    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azure = new Azure('tenant_id', ['client_id'], logger);
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id', exp: 60 });
@@ -63,7 +63,7 @@ describe('Test Azure', () => {
     // Setp sut
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
-    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azure = new Azure('tenant_id', ['client_id'], logger);
 
     // Setup token
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'wrong_client_id' });
@@ -71,6 +71,6 @@ describe('Test Azure', () => {
 
     // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);
-    expect(loggerSpy).toHaveBeenCalledWith('Failed to verify jwt:: jwt audience invalid. expected: client_id');
+    expect(loggerSpy).toHaveBeenCalledWith('Failed to verify jwt:: token contains invalid audience');
   });
 });

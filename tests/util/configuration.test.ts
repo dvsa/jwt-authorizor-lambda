@@ -77,7 +77,7 @@ describe('Test configuration', () => {
     expect(config.cognito.region).toBe('cognito_region');
     expect(config.cognito.clientIds).toEqual(['cognito_client_id_1', 'cognito_client_id_2']);
     expect(config.azure.tenantId).toBe('azure_tenant_id');
-    expect(config.azure.clientId).toBe('azure_client_id');
+    expect(config.azure.clientIds).toEqual(['azure_client_id']);
     expect(config.configurationFile.enabled).toBe(true);
     expect(config.configurationFile.filePath).toBe('/path/to/config/file');
   });

@@ -74,8 +74,17 @@ export class PolicyGenerator {
     const requestPath = `/${pathParts.join('/')}`;
 
     const isAllowed = configFileContents.some((roleConfig) => userRoles.includes(roleConfig.role)
-        && roleConfig.authorisedEndpoints.some((ep) => ep.httpVerb === httpVerb
-            && ep.url === requestPath));
+        && roleConfig.authorisedEndpoints.some((ep) => {
+          if (ep.httpVerb !== httpVerb) return false;
+
+          // Handle wildcard matching / path params
+          if (ep.url.endsWith('*')) {
+            // remove '*'
+            const basePath = ep.url.slice(0, -1);
+            return requestPath.startsWith(basePath);
+          }
+          return ep.url === requestPath;
+        }));
 
     this.logger.info(`User ${isAllowed ? '' : 'not '}authorised to access ${requestPath} with the roles: ${JSON.stringify(userRoles)}`);
 
