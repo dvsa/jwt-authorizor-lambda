@@ -12,7 +12,7 @@ export interface CognitoConfig {
 
 export interface AzureConfig {
   tenantId: string
-  clientId: string
+  clientIds: string[]
 }
 
 export interface ConfigurationFileConfig {

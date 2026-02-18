@@ -22,7 +22,7 @@ describe('Test tokenVerifier', () => {
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
-    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
@@ -43,7 +43,7 @@ describe('Test tokenVerifier', () => {
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
-    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
@@ -64,7 +64,7 @@ describe('Test tokenVerifier', () => {
     const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
-    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azure = new Azure('tenant_id', ['client_id'], logger);
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const tokenVerifier = new TokenVerifier(cognito, azure, logger);
@@ -81,7 +81,7 @@ describe('Test tokenVerifier', () => {
     const loggerSpy = jest.spyOn(logger, 'info');
 
     const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
-    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azure = new Azure('tenant_id', ['client_id'], logger);
     const tokenVerifier = new TokenVerifier(cognito, azure, logger);
 
     const res = await tokenVerifier.verify('token');
@@ -97,7 +97,7 @@ describe('Test tokenVerifier', () => {
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
-    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const token = jwks.token({ iss: cognito.getIssuer(), token_use: 'access', client_id: 'client_id' });
@@ -119,7 +119,7 @@ describe('Test tokenVerifier', () => {
     const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
-    const azure = new Azure('tenant_id', 'client_id', new Logger(''));
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
@@ -141,7 +141,7 @@ describe('Test tokenVerifier', () => {
     const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
     const cognitoSpy = jest.spyOn(cognito, 'verify');
 
-    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azure = new Azure('tenant_id', ['client_id'], logger);
     const azureSpy = jest.spyOn(azure, 'verify');
 
     const tokenVerifier = new TokenVerifier(cognito, azure, logger);
@@ -158,7 +158,7 @@ describe('Test tokenVerifier', () => {
     const loggerSpy = jest.spyOn(logger, 'info');
 
     const cognito = new Cognito('region', 'pool_id', ['client_id'], logger);
-    const azure = new Azure('tenant_id', 'client_id', logger);
+    const azure = new Azure('tenant_id', ['client_id'], logger);
     const tokenVerifier = new TokenVerifier(cognito, azure, logger);
 
     const res = await tokenVerifier.getVerifiedDecodedToken('token');

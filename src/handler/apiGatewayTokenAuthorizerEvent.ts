@@ -24,7 +24,7 @@ Promise<APIGatewayAuthorizerResult> => {
   const fileService = new PermissionsConfigReader(schemaValidator, logger);
   const verifier = new TokenVerifier(
     new Cognito(config.cognito.region, config.cognito.poolId, config.cognito.clientIds, logger),
-    new Azure(config.azure.tenantId, config.azure.clientId, logger),
+    new Azure(config.azure.tenantId, config.azure.clientIds, logger),
     logger,
   );
 
