@@ -7,15 +7,14 @@ jobs:
   lint:
     uses: dvsa/.github/.github/workflows/nodejs-lint.yaml@v5.0.9
     with:
-      node-version: '22.x'
+      node-version: '24.x'
   test:
     uses: dvsa/.github/.github/workflows/nodejs-test.yaml@v5.0.9
     with:
-      node-version: '22.x'
+      node-version: '24.x'
 
   security:
     uses: dvsa/.github/.github/workflows/nodejs-security.yaml@v5.0.9
-
     secrets:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -45,7 +44,7 @@ jobs:
       upload-artifact: true
       build-folder: dist
       build-command: npm run build:prod
-      node-version: '22.x'
+      node-version: '24.x'
 
   upload-to-s3:
     if: startsWith(github.ref, 'refs/heads/feat/') || startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/fix/') || startsWith(github.ref, 'refs/heads/master')
