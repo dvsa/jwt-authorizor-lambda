@@ -107,6 +107,7 @@ dist
 # MAC files
 .DS_Store
 env.json
+event.json
 
 invoke/
 

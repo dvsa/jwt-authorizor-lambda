@@ -51,7 +51,7 @@ export class Cognito {
   }
 
   public async getPublicKey(keyId: string): Promise<string> {
-    let requestAgent: HttpsProxyAgent;
+    let requestAgent: HttpsProxyAgent<string> | undefined;
 
     if (process.env.HTTP_PROXY) {
       requestAgent = new HttpsProxyAgent(process.env.HTTP_PROXY);

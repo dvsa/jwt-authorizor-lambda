@@ -56,7 +56,7 @@ The following are optional environment variables which can be set.
 
 ### Requirements
 
-- node v18.15.0
+- node v24
 - [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 
 
@@ -80,7 +80,7 @@ To watch for changes and automatically trigger a new build:
   "ApiGatewayTokenAuthorizerEvent": {
     "COGNITO_POOL_ID": "",
     "COGNITO_REGION": "",
-    "COGNITO_CLIENT_ID": "",
+    "COGNITO_CLIENT_ID_1": "",
     "AZURE_TENANT_ID": "",
     "AZURE_CLIENT_ID": ""
   }
@@ -91,14 +91,14 @@ To watch for changes and automatically trigger a new build:
   "ENABLE_CONFIGURATION_FILE": "true",
   "CONFIGURATION_FILE_PATH": "configuration.json",
 ```
-- Create event file. An example for this is:
+- Create `event.json` file at the root of the project containing:
 ```json
 {
   "authorizationToken": "Bearer {replace with real token}",
   "methodArn": "arn:aws:execute-api:eu-west-2:123456789012:/prod/POST/{proxy+}"
 }
 ```
-- Invoke the event: `npm run invoke -- --env-vars env.json -e event/file/path.json`
+- Invoke the event: `npm run invoke -- --env-vars env.json -e event.json`
 
 
 ### Tests
