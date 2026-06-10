@@ -31,6 +31,18 @@ describe('PolicyGenerator', () => {
         },
       ],
     },
+    {
+      role: 'ThirdRole',
+      authorisedEndpoints: [
+        {
+          httpVerb: 'GET',
+          url: '/endpoint/:id/detail',
+        }, {
+          httpVerb: 'GET',
+          url: '/endpoint/files/*',
+        },
+      ],
+    },
   ];
 
   beforeEach(() => {
@@ -123,11 +135,39 @@ describe('PolicyGenerator', () => {
 
       expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
       expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
-      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
     });
 
     test('should return a deny policy if a user is trying to access an ARN with the incorrect role', () => {
       const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['UnknownRole'], requestArn);
+
+      expect(result.principalId).toBe('Unauthorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Deny');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return an allow policy when a dynamic :param segment matches any value', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/abc123/detail';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
+
+      expect(result.principalId).toBe('Authorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return a deny policy when the HTTP verb does not match a :param route', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/POST/endpoint/abc123/detail';
       const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
 
       expect(result.principalId).toBe('Unauthorised');
@@ -137,7 +177,77 @@ describe('PolicyGenerator', () => {
 
       expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Deny');
       expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
-      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return a deny policy when the path has extra segments beyond a :param route', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/abc123/detail/extra';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
+
+      expect(result.principalId).toBe('Unauthorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Deny');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return an allow policy when a wildcard matches a single trailing segment', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/files/report';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
+
+      expect(result.principalId).toBe('Authorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return an allow policy when a wildcard matches multiple trailing segments', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/files/report/summary';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
+
+      expect(result.principalId).toBe('Authorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return a deny policy when the path prefix before the wildcard does not match', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/other/report';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['ThirdRole'], requestArn);
+
+      expect(result.principalId).toBe('Unauthorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Deny');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
+    });
+
+    test('should return an allow policy when one of multiple user roles matches', () => {
+      const requestArn = 'arn:aws:execute-api:eu-west-2:123456789012:/*/GET/endpoint/one';
+      const result: APIGatewayAuthorizerResult = policyGenerator.generateConfigurationFilePolicyForProxy(PERMISSIONS_CONFIG, ['UnknownRole', 'FirstRole'], requestArn);
+
+      expect(result.principalId).toBe('Authorised');
+      expect(result.policyDocument.Version).toBe('2012-10-17');
+
+      expect(result.policyDocument.Statement).toHaveLength(1);
+
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Effect', 'Allow');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Action', 'execute-api:Invoke');
+      expect(result.policyDocument.Statement[0]).toHaveProperty('Resource', requestArn);
     });
   });
 });
