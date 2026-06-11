@@ -77,13 +77,7 @@ export class PolicyGenerator {
         && roleConfig.authorisedEndpoints.some((ep) => {
           if (ep.httpVerb !== httpVerb) return false;
 
-          // Handle wildcard paths
-          if (ep.url.endsWith('*')) {
-            // remove '*'
-            const basePath = ep.url.slice(0, -1);
-            return requestPath.startsWith(basePath);
-          }
-          return ep.url === requestPath;
+          return this.matchesUrlPattern(ep.url, requestPath);
         }));
 
     this.logger.info(`User ${isAllowed ? '' : 'not '}authorised to access ${requestPath} with the roles: ${JSON.stringify(userRoles)}`);
@@ -132,6 +126,27 @@ export class PolicyGenerator {
       Action: this.INVOKE_ACTION,
       Resource: arn,
     };
+  }
+
+  /**
+   * Tests whether a request path matches a URL pattern from the config.
+   * Supports two dynamic segment types:
+   *  - `:paramName` — matches any single path segment (e.g. `:licenceNumber` matches "OB1234567")
+   *  - `*`          — matches anything that follows, including multiple segments
+   */
+  private matchesUrlPattern(configUrl: string, requestPath: string): boolean {
+    const configUrlSegments = configUrl.split('/');
+    const requestSegments = requestPath.split('/');
+
+    for (let i = 0; i < configUrlSegments.length; i++) {
+      const configUrlSegment = configUrlSegments[`${i}`];
+
+      if (configUrlSegment === '*') return true;
+      if (i >= requestSegments.length) return false;
+      if (!configUrlSegment.startsWith(':') && configUrlSegment !== requestSegments[`${i}`]) return false;
+    }
+
+    return configUrlSegments.length === requestSegments.length;
   }
 
   private generateWildcardArn(eventMethodArn: string): string {
