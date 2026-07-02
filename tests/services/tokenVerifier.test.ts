@@ -36,7 +36,7 @@ describe('Test tokenVerifier', () => {
     expect(res).toBe(true);
   });
 
-  test('verify() to call azure.verify for a cognito JWT', async () => {
+  test('verify() to call azure.verify for an Azure v1 JWT', async () => {
     const jwks = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
     jwks.start();
 
@@ -46,7 +46,28 @@ describe('Test tokenVerifier', () => {
     const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
-    const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
+    const token = jwks.token({ iss: 'https://sts.windows.net/tenant_id/', aud: 'client_id' });
+
+    const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
+    const res = await tokenVerifier.verify(token);
+
+    expect(azureSpy).toHaveBeenCalled();
+    expect(cognitoSpy).not.toHaveBeenCalled();
+    expect(res).toBe(true);
+    jwks.stop();
+  });
+
+  test('verify() to call azure.verify for an Azure v2 JWT', async () => {
+    const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/v2.0/keys');
+    jwks.start();
+
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
+    const cognitoSpy = jest.spyOn(cognito, 'verify');
+
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
+    const azureSpy = jest.spyOn(azure, 'verify');
+
+    const token = jwks.token({ iss: 'https://login.microsoftonline.com/tenant_id/v2.0', aud: 'client_id' });
 
     const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
     const res = await tokenVerifier.verify(token);
@@ -112,7 +133,7 @@ describe('Test tokenVerifier', () => {
     expect(res.payload).toHaveProperty('iss', 'https://cognito-idp.region.amazonaws.com/pool_id');
   });
 
-  test('getVerifiedDecodedToken() to call azure.verify for a cognito JWT and return the decoded token', async () => {
+  test('getVerifiedDecodedToken() to call azure.verify for an Azure v1 JWT and return the decoded token', async () => {
     const jwks = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
     jwks.start();
 
@@ -122,7 +143,7 @@ describe('Test tokenVerifier', () => {
     const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
     const azureSpy = jest.spyOn(azure, 'verify');
 
-    const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
+    const token = jwks.token({ iss: 'https://sts.windows.net/tenant_id/', aud: 'client_id' });
 
     const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
     const res = await tokenVerifier.getVerifiedDecodedToken(token);
@@ -131,6 +152,28 @@ describe('Test tokenVerifier', () => {
     expect(cognitoSpy).not.toHaveBeenCalled();
     expect(res.header).toHaveProperty('typ', 'JWT');
     expect(res.payload).toHaveProperty('iss', 'https://sts.windows.net/tenant_id/');
+    jwks.stop();
+  });
+
+  test('getVerifiedDecodedToken() to call azure.verify for an Azure v2 JWT and return the decoded token', async () => {
+    const jwks = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/v2.0/keys');
+    jwks.start();
+
+    const cognito = new Cognito('region', 'pool_id', ['client_id'], new Logger(''));
+    const cognitoSpy = jest.spyOn(cognito, 'verify');
+
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
+    const azureSpy = jest.spyOn(azure, 'verify');
+
+    const token = jwks.token({ iss: 'https://login.microsoftonline.com/tenant_id/v2.0', aud: 'client_id' });
+
+    const tokenVerifier = new TokenVerifier(cognito, azure, new Logger(''));
+    const res = await tokenVerifier.getVerifiedDecodedToken(token);
+
+    expect(azureSpy).toHaveBeenCalled();
+    expect(cognitoSpy).not.toHaveBeenCalled();
+    expect(res.header).toHaveProperty('typ', 'JWT');
+    expect(res.payload).toHaveProperty('iss', 'https://login.microsoftonline.com/tenant_id/v2.0');
     jwks.stop();
   });
 

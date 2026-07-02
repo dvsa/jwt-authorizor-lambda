@@ -14,62 +14,66 @@ jest.mock('../../src/util/logger', () => ({
 }));
 
 describe('Test Azure', () => {
-  const jwks = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
+  const v1Issuer = 'https://sts.windows.net/tenant_id/';
+  const v2Issuer = 'https://login.microsoftonline.com/tenant_id/v2.0';
+
+  const jwksV1 = createJWKSMock('https://sts.windows.net/tenant_id', '/discovery/keys');
+  const jwksV2 = createJWKSMock('https://login.microsoftonline.com/tenant_id', '/discovery/v2.0/keys');
 
   beforeEach(() => {
-    jwks.start();
+    jwksV1.start();
+    jwksV2.start();
   });
 
   afterEach(() => {
-    jwks.stop();
+    jwksV1.stop();
+    jwksV2.stop();
   });
 
-  test('getIssuer() should return url with tenant id', () => {
-    // Setup sut
+  test('getAzureIssuers() should return both v1 and v2 issuer urls', () => {
     const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
 
-    // Expectations
-    expect(azure.getIssuer()).toBe('https://sts.windows.net/tenant_id/');
+    expect(azure.getAzureIssuers()).toEqual([v1Issuer, v2Issuer]);
   });
 
-  test('verify() should return true for correct jwt', async () => {
-    // Setup sut
+  test('verify() should return true for correct v1 jwt', async () => {
     const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
 
-    // Setup token
-    const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
+    const token = jwksV1.token({ iss: v1Issuer, aud: 'client_id' });
     const decodedToken = decode(token, { complete: true });
 
-    // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(true);
   });
 
-  test('verify() should return false for expired jtw', async () => {
-    // Setup sut
+  test('verify() should return true for correct v2 jwt', async () => {
+    const azure = new Azure('tenant_id', ['client_id'], new Logger(''));
+
+    const token = jwksV2.token({ iss: v2Issuer, aud: 'client_id' });
+    const decodedToken = decode(token, { complete: true });
+
+    expect(await azure.verify(token, decodedToken)).toBe(true);
+  });
+
+  test('verify() should return false for expired jwt', async () => {
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
     const azure = new Azure('tenant_id', ['client_id'], logger);
 
-    // Setup token
-    const token = jwks.token({ iss: azure.getIssuer(), aud: 'client_id', exp: 60 });
+    const token = jwksV1.token({ iss: v1Issuer, aud: 'client_id', exp: 60 });
     const decodedToken = decode(token, { complete: true });
 
-    // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);
     expect(loggerSpy).toHaveBeenCalledWith('Failed to verify jwt:: jwt expired');
   });
 
   test('verify() should return false for invalid client_id', async () => {
-    // Setp sut
     const logger = new Logger('');
     const loggerSpy = jest.spyOn(logger, 'info');
     const azure = new Azure('tenant_id', ['client_id'], logger);
 
-    // Setup token
-    const token = jwks.token({ iss: azure.getIssuer(), aud: 'wrong_client_id' });
+    const token = jwksV1.token({ iss: v1Issuer, aud: 'wrong_client_id' });
     const decodedToken = decode(token, { complete: true });
 
-    // Define expectations
     expect(await azure.verify(token, decodedToken)).toBe(false);
     expect(loggerSpy).toHaveBeenCalledWith('Failed to verify jwt:: token contains invalid audience');
   });
@@ -79,13 +83,13 @@ describe('Test Azure', () => {
     const azure = new Azure('tenant_id', ['client_id'], logger);
 
     // token.aud as string
-    const tokenWithStringAud = jwks.token({ iss: azure.getIssuer(), aud: 'client_id' });
+    const tokenWithStringAud = jwksV1.token({ iss: v1Issuer, aud: 'client_id' });
     const decodedToken = decode(tokenWithStringAud, { complete: true });
 
     expect(await azure.verify(tokenWithStringAud, decodedToken)).toBe(true);
 
     // token.aud as array of strings
-    const tokenWithArrayAud = jwks.token({ iss: azure.getIssuer(), aud: ['client_id', 'client_id_2'] });
+    const tokenWithArrayAud = jwksV1.token({ iss: v1Issuer, aud: ['client_id', 'client_id_2'] });
     const decodedToken2 = decode(tokenWithArrayAud, { complete: true });
 
     expect(await azure.verify(tokenWithArrayAud, decodedToken2)).toBe(true);
