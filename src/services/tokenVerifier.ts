@@ -57,13 +57,16 @@ export class TokenVerifier {
       throw new Error('Unable to decode payload into object, instead received string.');
     }
 
-    switch (decodedToken.payload.iss) {
-      case this.cognito.getIssuer():
-        return this.cognito.verify(rawToken, decodedToken);
-      case this.azure.getIssuer():
-        return this.azure.verify(rawToken, decodedToken);
-      default:
-        throw new Error(`Token issuer '${decodedToken.payload.iss}' not accepted`);
+    const { iss } = decodedToken.payload;
+
+    if (iss === this.cognito.getIssuer()) {
+      return this.cognito.verify(rawToken, decodedToken);
     }
+
+    if (this.azure.getAzureIssuers().includes(iss)) {
+      return this.azure.verify(rawToken, decodedToken);
+    }
+
+    throw new Error(`Token issuer '${iss}' not accepted`);
   }
 }
